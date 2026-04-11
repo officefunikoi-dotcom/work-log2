@@ -211,7 +211,7 @@
 
 <script>
     let db;
-    const DB_NAME = "WorkLogDB_Final_v3";
+    const DB_NAME = "WorkLogDB_Final_v4";
     const STORES = ["logs", "members", "config"];
 
     const request = indexedDB.open(DB_NAME, 1);
@@ -320,15 +320,15 @@
         navigator.clipboard.writeText(text);
     }
 
-    // 履歴データの削除機能
     function deleteLog(id) {
-        if(!confirm("この履歴を削除しますか？（請求額も減ります）")) return;
+        if(!confirm("この履歴を削除しますか？")) return;
         db.transaction("logs", "readwrite").objectStore("logs").delete(id).oncomplete = renderLogs;
     }
 
     function renderLogs() {
         db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => {
-            const logs = e.target.result.reverse();
+            // 日付順（新しい順）にソート
+            const logs = e.target.result.sort((a, b) => new Date(b.date) - new Date(a.date));
             document.getElementById('logs-list').innerHTML = logs.map(l => `
                 <div class="log-item">
                     <div>
@@ -345,7 +345,11 @@
         const target = document.getElementById('invoice-month').value;
         let total = 0;
         db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => {
-            const filtered = e.target.result.filter(l => l.month === target);
+            // 月を絞り込んでから、日付の古い順にソート
+            const filtered = e.target.result
+                .filter(l => l.month === target)
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+
             document.getElementById('invoice-body').innerHTML = filtered.map(l => {
                 total += l.totalWage;
                 return `<tr><td>${l.date}</td><td>${l.site}</td><td>日当+残+手+経</td><td>¥${l.totalWage.toLocaleString()}</td></tr>`;

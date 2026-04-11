@@ -211,13 +211,16 @@
 
 <script>
     let db;
-    const DB_NAME = "WorkLogDB_Final_v4";
+    // データベース名を固定して、これ以降は変更しないようにします
+    const DB_NAME = "WorkLogSystem_v1";
     const STORES = ["logs", "members", "config"];
 
     const request = indexedDB.open(DB_NAME, 1);
     request.onupgradeneeded = (e) => {
         db = e.target.result;
-        STORES.forEach(s => db.createObjectStore(s, { keyPath: s === "config" ? "key" : (s === "members" ? "name" : "id"), autoIncrement: s === "logs" }));
+        if (!db.objectStoreNames.contains("logs")) db.createObjectStore("logs", { keyPath: "id", autoIncrement: true });
+        if (!db.objectStoreNames.contains("members")) db.createObjectStore("members", { keyPath: "name" });
+        if (!db.objectStoreNames.contains("config")) db.createObjectStore("config", { keyPath: "key" });
     };
 
     request.onsuccess = (e) => { 
@@ -229,7 +232,8 @@
     function init() {
         document.getElementById('date').valueAsDate = new Date();
         const now = new Date();
-        document.getElementById('invoice-month').value = now.toISOString().substring(0, 7);
+        const monthInput = document.getElementById('invoice-month');
+        if(monthInput) monthInput.value = now.toISOString().substring(0, 7);
         renderMembers();
     }
 
@@ -240,6 +244,7 @@
         document.getElementById(`btn-${pageId}`).classList.add('active');
         if(pageId === 'logs') renderLogs();
         if(pageId === 'invoice') renderInvoice();
+        if(pageId === 'settings') renderMembers();
     }
 
     function toggleOvertime() {
@@ -253,17 +258,30 @@
     }
 
     function loadTripPay() {
-        db.transaction("config", "readonly").objectStore("config").get("tripPay").onsuccess = (e) => {
+        const store = db.transaction("config", "readonly").objectStore("config");
+        store.get("tripPay").onsuccess = (e) => {
             if(e.target.result) document.getElementById('setting-trip-pay').value = e.target.result.value;
         };
     }
 
+    // メンバー追加処理の補強
     function addMember() {
-        const name = document.getElementById('new-member-name').value;
+        const nameInput = document.getElementById('new-member-name');
+        const name = nameInput.value.trim();
         if(!name) return;
-        db.transaction("members", "readwrite").objectStore("members").add({ name }).oncomplete = () => {
-            document.getElementById('new-member-name').value = '';
+        
+        const transaction = db.transaction("members", "readwrite");
+        const store = transaction.objectStore("members");
+        
+        const request = store.put({ name: name });
+        
+        request.onsuccess = () => {
+            nameInput.value = '';
             renderMembers();
+        };
+        
+        request.onerror = () => {
+            alert("追加に失敗しました。");
         };
     }
 
@@ -273,10 +291,15 @@
     }
 
     function renderMembers() {
-        db.transaction("members", "readonly").objectStore("members").getAll().onsuccess = (e) => {
+        if (!db) return;
+        const store = db.transaction("members", "readonly").objectStore("members");
+        store.getAll().onsuccess = (e) => {
             const members = e.target.result;
-            document.getElementById('member-selector').innerHTML = members.map(m => `<div class="member-chip" onclick="handleMemberClick(this)">${m.name}</div>`).join('');
-            document.getElementById('settings-member-list').innerHTML = members.map(m => `<div class="settings-item"><span>${m.name}</span><button class="delete-btn" onclick="deleteMember('${m.name}')">削除</button></div>`).join('');
+            const selector = document.getElementById('member-selector');
+            const settingsList = document.getElementById('settings-member-list');
+            
+            if(selector) selector.innerHTML = members.map(m => `<div class="member-chip" onclick="handleMemberClick(this)">${m.name}</div>`).join('');
+            if(settingsList) settingsList.innerHTML = members.map(m => `<div class="settings-item"><span>${m.name}</span><button class="delete-btn" onclick="deleteMember('${m.name}')">削除</button></div>`).join('');
         };
     }
 
@@ -327,7 +350,6 @@
 
     function renderLogs() {
         db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => {
-            // 日付順（新しい順）にソート
             const logs = e.target.result.sort((a, b) => new Date(b.date) - new Date(a.date));
             document.getElementById('logs-list').innerHTML = logs.map(l => `
                 <div class="log-item">
@@ -345,7 +367,6 @@
         const target = document.getElementById('invoice-month').value;
         let total = 0;
         db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => {
-            // 月を絞り込んでから、日付の古い順にソート
             const filtered = e.target.result
                 .filter(l => l.month === target)
                 .sort((a, b) => new Date(a.date) - new Date(b.date));

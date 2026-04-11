@@ -57,7 +57,6 @@
             font-size: 16px; background: white;
         }
 
-        /* 同行者リスト */
         .member-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
         .member-chip {
             padding: 8px 16px; border-radius: 20px; background: white;
@@ -72,11 +71,9 @@
             font-size: 17px; font-weight: 600; text-align: center; border: none; cursor: pointer;
             transition: transform 0.1s, opacity 0.1s;
         }
-        .btn:active { transform: scale(0.98); opacity: 0.9; }
         .btn-primary { background: var(--accent-blue); color: white; margin-top: 20px; }
         .btn-secondary { background: #e8e8ed; color: var(--text-color); margin-top: 10px; }
 
-        /* 請求書固有 */
         .invoice-paper { background: white; color: black; padding: 40px; min-height: 800px; border: 1px solid #d2d2d7; }
         .invoice-title { font-size: 32px; text-align: center; border-bottom: 2px solid #000; margin-bottom: 30px; letter-spacing: 0.5em; padding-bottom: 5px; }
         .invoice-header { display: flex; justify-content: space-between; margin-bottom: 30px; }
@@ -114,67 +111,35 @@
         <div class="card">
             <div class="form-group"><label>日付</label><input type="date" id="date"></div>
             <div class="form-group"><label>現場名</label><input type="text" id="site-name" placeholder="現場名"></div>
-            <div class="form-group">
-                <label>参加メンバー（同行者）</label>
-                <div id="member-selector" class="member-list"></div>
-            </div>
+            <div class="form-group"><label>同行したメンバー（記録用）</label><div id="member-selector" class="member-list"></div></div>
             <div class="form-group"><label>勤務・移動区分</label>
                 <select id="work-type" onchange="toggleOvertime()">
                     <option value="定時終了">定時終了</option>
                     <option value="残業">残業あり</option>
-                    <option value="移動日100">移動日 (日当100%)</option>
-                    <option value="移動日50">移動日 (日当50%)</option>
+                    <option value="移動日100">移動日 (100%)</option>
+                    <option value="移動日50">移動日 (50%)</option>
                 </select>
             </div>
             <div id="overtime-group" class="form-group hidden"><label>残業時間 (時間)</label><input type="number" id="overtime-hours" step="0.5" value="0"></div>
             <div class="form-group"><label>基本日当</label><input type="number" id="base-wage" value="18000"></div>
-            <div class="form-group">
-                <label><input type="checkbox" id="is-business-trip" style="width:18px; height:18px; vertical-align:middle;"> <span style="vertical-align:middle;">出張手当を追加</span></label>
-            </div>
-            <div class="form-group"><label>経費 (材料・駐車場など)</label><input type="number" id="expenses" value="0"></div>
+            <div class="form-group"><label><input type="checkbox" id="is-business-trip" style="width:18px; height:18px; vertical-align:middle;"> <span style="vertical-align:middle;">出張手当を追加</span></label></div>
+            <div class="form-group"><label>経費</label><input type="number" id="expenses" value="0"></div>
             <button class="btn btn-primary" onclick="saveLog()">保存してLINEコピー</button>
         </div>
     </section>
 
-    <section id="page-logs" class="hidden">
-        <h1>履歴</h1>
-        <div id="logs-list"></div>
-    </section>
+    <section id="page-logs" class="hidden"><h1>履歴</h1><div id="logs-list"></div></section>
 
     <section id="page-invoice" class="hidden">
-        <div class="no-print">
-            <h1>請求書発行</h1>
-            <div class="card"><label>対象月</label><input type="month" id="invoice-month" onchange="renderInvoice()"></div>
-        </div>
-
+        <div class="no-print"><h1>請求書発行</h1><div class="card"><label>対象月</label><input type="month" id="invoice-month" onchange="renderInvoice()"></div></div>
         <div id="invoice-paper" class="invoice-paper">
             <div class="invoice-title">請求書</div>
             <div class="invoice-header">
-                <div>
-                    <div id="disp-client-addr" style="font-size:12px;"></div>
-                    <div id="disp-client-name" class="bill-to"></div>
-                    <div style="font-size:14px;">下記の通り、ご請求申し上げます。</div>
-                </div>
-                <div class="my-info">
-                    <div id="disp-my-date" style="margin-bottom:10px;"></div>
-                    <div id="disp-my-name" style="font-weight:bold; font-size:16px;"></div>
-                    <div id="disp-my-addr"></div>
-                    <div id="disp-my-tel"></div>
-                </div>
+                <div><div id="disp-client-addr" style="font-size:12px;"></div><div id="disp-client-name" class="bill-to"></div><div style="font-size:14px;">下記の通り、ご請求申し上げます。</div></div>
+                <div class="my-info"><div id="disp-my-date" style="margin-bottom:10px;"></div><div id="disp-my-name" style="font-weight:bold; font-size:16px;"></div><div id="disp-my-addr"></div><div id="disp-my-tel"></div></div>
             </div>
-
-            <div class="grand-total-box">
-                <span>ご請求金額</span>
-                <span id="disp-total-amount">¥ 0 -</span>
-            </div>
-
-            <table class="invoice-table">
-                <thead>
-                    <tr><th style="width:15%;">日付</th><th>現場名・摘要</th><th style="width:20%;">備考</th><th style="width:20%;">金額</th></tr>
-                </thead>
-                <tbody id="invoice-body"></tbody>
-            </table>
-
+            <div class="grand-total-box"><span>ご請求金額</span><span id="disp-total-amount">¥ 0 -</span></div>
+            <table class="invoice-table"><thead><tr><th style="width:15%;">日付</th><th>現場名・摘要</th><th style="width:20%;">備考</th><th style="width:20%;">金額</th></tr></thead><tbody id="invoice-body"></tbody></table>
             <div class="bank-info" id="disp-bank-details"></div>
         </div>
         <button class="btn btn-secondary no-print" onclick="window.print()">印刷 / PDF保存</button>
@@ -182,38 +147,11 @@
 
     <section id="page-settings" class="hidden">
         <h1>設定</h1>
-        <div class="card">
-            <h3>請求先情報 (相手)</h3>
-            <div class="form-group"><label>会社名・屋号</label><input type="text" id="set-client-name" onchange="saveConfig()"></div>
-            <div class="form-group"><label>住所</label><input type="text" id="set-client-addr" onchange="saveConfig()"></div>
-        </div>
-        <div class="card">
-            <h3>請求元情報 (自分)</h3>
-            <div class="form-group"><label>会社名・氏名</label><input type="text" id="set-my-name" onchange="saveConfig()"></div>
-            <div class="form-group"><label>住所</label><input type="text" id="set-my-addr" onchange="saveConfig()"></div>
-            <div class="form-group"><label>電話番号</label><input type="text" id="set-my-tel" onchange="saveConfig()"></div>
-        </div>
-        <div class="card">
-            <h3>お振込先・手当設定</h3>
-            <div class="form-group"><label>振込先情報</label><textarea id="set-bank-info" rows="3" onchange="saveConfig()"></textarea></div>
-            <div class="form-group"><label>出張手当 (円/日)</label><input type="number" id="set-trip-pay" value="1000" onchange="saveConfig()"></div>
-        </div>
-        <div class="card">
-            <h3>同行者名簿設定</h3>
-            <div style="display:flex; gap:10px; margin-bottom:15px;">
-                <input type="text" id="new-member-name" placeholder="名前を入力">
-                <button class="btn btn-primary" style="margin:0; width:80px; padding:10px;" onclick="addMember()">追加</button>
-            </div>
-            <div id="settings-member-list"></div>
-        </div>
-        <div class="card">
-            <h3>バックアップ・復元</h3>
-            <button class="btn btn-secondary" onclick="exportData()">全データ保存 (JSONファイル)</button>
-            <div style="margin-top:20px;">
-                <label>復元 (保存したファイルを選択)</label>
-                <input type="file" id="importFile" accept=".json" onchange="importData(event)">
-            </div>
-        </div>
+        <div class="card"><h3>請求先情報</h3><div class="form-group"><label>会社名</label><input type="text" id="set-client-name" onchange="saveConfig()"></div><div class="form-group"><label>住所</label><input type="text" id="set-client-addr" onchange="saveConfig()"></div></div>
+        <div class="card"><h3>請求元情報</h3><div class="form-group"><label>名称</label><input type="text" id="set-my-name" onchange="saveConfig()"></div><div class="form-group"><label>住所</label><input type="text" id="set-my-addr" onchange="saveConfig()"></div><div class="form-group"><label>電話番号</label><input type="text" id="set-my-tel" onchange="saveConfig()"></div></div>
+        <div class="card"><h3>振込先・手当</h3><div class="form-group"><label>振込先</label><textarea id="set-bank-info" rows="3" onchange="saveConfig()"></textarea></div><div class="form-group"><label>出張手当 (円)</label><input type="number" id="set-trip-pay" value="1000" onchange="saveConfig()"></div></div>
+        <div class="card"><h3>名簿管理（同行者）</h3><div style="display:flex; gap:10px; margin-bottom:15px;"><input type="text" id="new-member-name" placeholder="名前"><button class="btn btn-primary" style="margin:0; width:80px; padding:10px;" onclick="addMember()">追加</button></div><div id="settings-member-list"></div></div>
+        <div class="card"><h3>データ保存</h3><button class="btn btn-secondary" onclick="exportData()">全データ保存</button><div style="margin-top:20px;"><label>復元</label><input type="file" accept=".json" onchange="importData(event)"></div></div>
     </section>
 </div>
 
@@ -231,11 +169,7 @@
         if (!db.objectStoreNames.contains("members")) db.createObjectStore("members", { keyPath: "name" });
     };
 
-    request.onsuccess = (e) => {
-        db = e.target.result;
-        loadConfig();
-        init();
-    };
+    request.onsuccess = (e) => { db = e.target.result; loadConfig(); init(); };
 
     function init() {
         document.getElementById('date').valueAsDate = new Date();
@@ -258,48 +192,37 @@
         document.getElementById('overtime-group').classList.toggle('hidden', type !== '残業');
     }
 
-    // 名簿管理
     function addMember() {
-        const nameInput = document.getElementById('new-member-name');
-        const name = nameInput.value.trim();
+        const input = document.getElementById('new-member-name');
+        const name = input.value.trim();
         if(!name) return;
         db.transaction("members", "readwrite").objectStore("members").put({ name }).onsuccess = () => {
-            nameInput.value = "";
-            renderSettingsMemberList();
-            renderMemberSelector();
+            input.value = ""; renderSettingsMemberList(); renderMemberSelector();
         };
     }
 
     function deleteMember(name) {
-        if(!confirm(name + " を名簿から削除しますか？")) return;
+        if(!confirm(name + " 削除？")) return;
         db.transaction("members", "readwrite").objectStore("members").delete(name).onsuccess = () => {
-            renderSettingsMemberList();
-            renderMemberSelector();
+            renderSettingsMemberList(); renderMemberSelector();
         };
     }
 
     function renderMemberSelector() {
-        const selector = document.getElementById('member-selector');
         db.transaction("members", "readonly").objectStore("members").getAll().onsuccess = (e) => {
-            const members = e.target.result;
-            selector.innerHTML = members.map(m => `<div class="member-chip" onclick="this.classList.toggle('selected')">${m.name}</div>`).join('');
+            document.getElementById('member-selector').innerHTML = e.target.result.map(m => `<div class="member-chip" onclick="this.classList.toggle('selected')">${m.name}</div>`).join('');
         };
     }
 
     function renderSettingsMemberList() {
-        const list = document.getElementById('settings-member-list');
         db.transaction("members", "readonly").objectStore("members").getAll().onsuccess = (e) => {
-            const members = e.target.result;
-            list.innerHTML = members.map(m => `
+            document.getElementById('settings-member-list').innerHTML = e.target.result.map(m => `
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #e8e8ed;">
-                    <span>${m.name}</span>
-                    <button class="btn" style="width:60px; background:#ff3b30; color:white; padding:5px; font-size:12px; margin:0;" onclick="deleteMember('${m.name}')">削除</button>
-                </div>
-            `).join('');
+                    <span>${m.name}</span><button class="btn" style="width:60px; background:#ff3b30; color:white; padding:5px; font-size:12px; margin:0;" onclick="deleteMember('${m.name}')">削除</button>
+                </div>`).join('');
         };
     }
 
-    // 設定管理
     function saveConfig() {
         const config = {
             clientName: document.getElementById('set-client-name').value,
@@ -328,7 +251,6 @@
         };
     }
 
-    // 保存とコピー
     async function saveLog() {
         const date = document.getElementById('date').value;
         const site = document.getElementById('site-name').value;
@@ -343,7 +265,6 @@
 
         const config = await getConfig();
         const tripPay = isTrip ? config.tripPay : 0;
-
         let calcWage = baseWage;
         if(workType === '移動日50') calcWage = baseWage * 0.5;
 
@@ -354,8 +275,12 @@
         
         db.transaction("logs", "readwrite").objectStore("logs").add(data).oncomplete = () => {
             const d = new Date(date);
-            const mStr = members.length > 0 ? members.join(', ') : "なし";
-            let lineText = `${d.getMonth()+1}/${d.getDate()} [${site}] [${mStr}] ${members.length + 1}名 `;
+            const myName = config.myName || "メンバー";
+            const mStr = members.length > 0 ? members.join(', ') : "";
+            // LINE報告形式：自分の名前と同行者を合わせる
+            const allMembers = mStr ? `${myName}, ${mStr}` : myName;
+            
+            let lineText = `${d.getMonth()+1}/${d.getDate()} [${site}] [${allMembers}] ${members.length + 1}名 `;
             
             if(workType === '残業') lineText += `残業${overtime}時間です。`;
             else if(workType.includes('移動日')) lineText += `移動日です。`;
@@ -370,20 +295,9 @@
 
     async function copyText(text) {
         const toast = document.getElementById('toast');
-        try {
-            if (navigator.clipboard) {
-                await navigator.clipboard.writeText(text);
-                toast.style.opacity = '1';
-                setTimeout(() => toast.style.opacity = '0', 2000);
-            } else {
-                const ta = document.createElement("textarea");
-                ta.value = text; document.body.appendChild(ta);
-                ta.select(); document.execCommand('copy');
-                document.body.removeChild(ta);
-                toast.style.opacity = '1';
-                setTimeout(() => toast.style.opacity = '0', 2000);
-            }
-        } catch (err) { alert("コピーに失敗しました。手動でコピーしてください。"); }
+        if (navigator.clipboard) { await navigator.clipboard.writeText(text); } 
+        else { const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); }
+        toast.style.opacity = '1'; setTimeout(() => toast.style.opacity = '0', 2000);
     }
 
     function renderInvoice() {
@@ -401,15 +315,14 @@
             let totalAmount = 0;
             db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => {
                 const logs = e.target.result.filter(l => l.month === targetMonth).sort((a,b) => new Date(a.date) - new Date(b.date));
-                const html = logs.map(l => {
+                document.getElementById('invoice-body').innerHTML = logs.map(l => {
                     totalAmount += l.total;
                     let memo = l.workType;
-                    if(l.overtime > 0) memo += `(${l.overtime}h)`;
+                    if(l.workType === '残業' && l.overtime > 0) memo += `(${l.overtime}h)`;
                     if(l.tripPay > 0) memo += ` +出張手当`;
                     if(l.expenses > 0) memo += ` +経費`;
                     return `<tr><td>${l.date.replace(/-/g,'/')}</td><td>${l.site}</td><td>${memo}</td><td>¥ ${l.total.toLocaleString()}</td></tr>`;
                 }).join('');
-                document.getElementById('invoice-body').innerHTML = html;
                 document.getElementById('disp-total-amount').innerText = "¥ " + totalAmount.toLocaleString() + " -";
             };
         };
@@ -417,31 +330,20 @@
 
     function renderLogs() {
         db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => {
-            const logs = e.target.result.sort((a,b) => new Date(b.date) - new Date(a.date));
-            document.getElementById('logs-list').innerHTML = logs.map(l => `
+            document.getElementById('logs-list').innerHTML = e.target.result.sort((a,b) => new Date(b.date) - new Date(a.date)).map(l => {
+                const mStr = l.members && l.members.length > 0 ? `<br><small style="color:#86868b">同行: ${l.members.join(', ')}</small>` : "";
+                return `
                 <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
-                    <div><b>${l.date}</b><br>${l.site}<br>¥${l.total.toLocaleString()}</div>
+                    <div><b>${l.date}</b><br>${l.site}${mStr}<br>¥${l.total.toLocaleString()}</div>
                     <button class="btn" style="width:60px; background:#ff3b30; color:white; padding:8px; font-size:12px; margin:0;" onclick="deleteLog(${l.id})">削除</button>
-                </div>
-            `).join('');
+                </div>`;
+            }).join('');
         };
     }
 
-    function deleteLog(id) {
-        if(confirm("この履歴を削除しますか？")) {
-            db.transaction("logs", "readwrite").objectStore("logs").delete(id).oncomplete = renderLogs;
-        }
-    }
+    function deleteLog(id) { if(confirm("削除？")) db.transaction("logs", "readwrite").objectStore("logs").delete(id).oncomplete = renderLogs; }
+    async function getConfig() { return new Promise(res => db.transaction("config", "readonly").objectStore("config").get("main").onsuccess = (e) => res(e.target.result ? e.target.result.value : { tripPay: 1000 })); }
 
-    async function getConfig() {
-        return new Promise(res => {
-            db.transaction("config", "readonly").objectStore("config").get("main").onsuccess = (e) => {
-                res(e.target.result ? e.target.result.value : { tripPay: 1000 });
-            };
-        });
-    }
-
-    // バックアップ・復元
     async function exportData() {
         const data = {
             logs: await new Promise(r => db.transaction("logs","readonly").objectStore("logs").getAll().onsuccess = e => r(e.target.result)),
@@ -449,25 +351,20 @@
             members: await new Promise(r => db.transaction("members","readonly").objectStore("members").getAll().onsuccess = e => r(e.target.result))
         };
         const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `work_pro_backup_${new Date().toISOString().substring(0,10)}.json`;
-        a.click();
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `work_backup.json`; a.click();
     }
 
-    function importData(event) {
-        const file = event.target.files[0];
-        if(!file) return;
+    function importData(e) {
+        const file = e.target.files[0]; if(!file) return;
         const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = JSON.parse(e.target.result);
-            if(confirm("現在のデータが上書きされます。よろしいですか？")) {
+        reader.onload = (ev) => {
+            const data = JSON.parse(ev.target.result);
+            if(confirm("上書きしますか？")) {
                 const tx = db.transaction(["logs", "config", "members"], "readwrite");
                 if(data.logs) { tx.objectStore("logs").clear(); data.logs.forEach(x => tx.objectStore("logs").put(x)); }
                 if(data.config) { tx.objectStore("config").clear(); data.config.forEach(x => tx.objectStore("config").put(x)); }
                 if(data.members) { tx.objectStore("members").clear(); data.members.forEach(x => tx.objectStore("members").put(x)); }
-                tx.oncomplete = () => { alert("復元が完了しました。ページを再読み込みします。"); location.reload(); };
+                tx.oncomplete = () => { alert("完了"); location.reload(); };
             }
         };
         reader.readAsText(file);

@@ -82,11 +82,11 @@
 
         .btn-secondary { background: #e8e8ed; color: var(--text-color); margin-top: 10px; }
 
-        .log-item { border-bottom: 1px solid #d2d2d7; padding: 15px 0; }
+        .log-item { border-bottom: 1px solid #d2d2d7; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
 
         .settings-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #e8e8ed; }
 
-        .delete-btn { color: #ff3b30; background: none; border: none; font-weight: 600; }
+        .delete-btn { color: #ff3b30; background: none; border: none; font-weight: 600; cursor: pointer; font-size: 13px; }
 
         .invoice-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
 
@@ -211,7 +211,7 @@
 
 <script>
     let db;
-    const DB_NAME = "WorkLogDB_Final_v2";
+    const DB_NAME = "WorkLogDB_Final_v3";
     const STORES = ["logs", "members", "config"];
 
     const request = indexedDB.open(DB_NAME, 1);
@@ -268,6 +268,7 @@
     }
 
     function deleteMember(name) {
+        if(!confirm(name + " を削除しますか？")) return;
         db.transaction("members", "readwrite").objectStore("members").delete(name).oncomplete = renderMembers;
     }
 
@@ -319,10 +320,24 @@
         navigator.clipboard.writeText(text);
     }
 
+    // 履歴データの削除機能
+    function deleteLog(id) {
+        if(!confirm("この履歴を削除しますか？（請求額も減ります）")) return;
+        db.transaction("logs", "readwrite").objectStore("logs").delete(id).oncomplete = renderLogs;
+    }
+
     function renderLogs() {
         db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => {
             const logs = e.target.result.reverse();
-            document.getElementById('logs-list').innerHTML = logs.map(l => `<div class="log-item"><div style="font-size:11px; color:var(--sub-text)">${l.date}</div><div style="font-weight:700">${l.site}</div><div style="font-size:13px;">請求額：¥${l.totalWage.toLocaleString()}</div></div>`).join('');
+            document.getElementById('logs-list').innerHTML = logs.map(l => `
+                <div class="log-item">
+                    <div>
+                        <div style="font-size:11px; color:var(--sub-text)">${l.date}</div>
+                        <div style="font-weight:700">${l.site}</div>
+                        <div style="font-size:13px;">請求額：¥${l.totalWage.toLocaleString()}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteLog(${l.id})">削除</button>
+                </div>`).join('');
         };
     }
 

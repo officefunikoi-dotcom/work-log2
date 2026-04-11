@@ -44,77 +44,61 @@
 
         nav button.active { color: var(--accent-blue); }
 
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
 
         h1 { font-size: 24px; font-weight: 700; text-align: center; margin: 20px 0 40px; }
 
         .card { background: var(--section-bg); padding: 20px; border-radius: var(--border-radius); margin-bottom: 20px; }
 
-        .form-group { margin-bottom: 20px; }
-
-        label { display: block; font-size: 12px; font-weight: 600; color: var(--sub-text); margin-bottom: 8px; margin-left: 4px; }
-
-        input[type="text"], input[type="number"], input[type="date"], select {
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; font-weight: 600; color: var(--sub-text); margin-bottom: 5px; }
+        input[type="text"], input[type="number"], input[type="date"], select, textarea {
             width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #d2d2d7;
-            font-size: 16px; background: white; appearance: none;
-        }
-
-        .member-list { display: flex; flex-wrap: wrap; gap: 10px; }
-
-        .member-chip { 
-            padding: 8px 16px; border-radius: 20px; background: white; 
-            border: 1px solid #d2d2d7; font-size: 14px; position: relative;
-            transition: transform 0.1s;
-        }
-        .member-chip:active { transform: scale(0.95); }
-
-        .member-chip.selected { background: var(--text-color); color: white; border-color: var(--text-color); }
-
-        .member-chip.business-trip::after {
-            content: "出張"; font-size: 10px; background: #ff9500; color: white;
-            padding: 2px 4px; border-radius: 4px; margin-left: 6px;
+            font-size: 16px; background: white;
         }
 
         .btn {
             display: block; width: 100%; padding: 16px; border-radius: var(--border-radius);
             font-size: 17px; font-weight: 600; text-align: center; border: none; cursor: pointer;
-            transition: transform 0.1s, opacity 0.1s;
+            transition: transform 0.1s;
         }
-        .btn:active { transform: scale(0.98); opacity: 0.9; }
-
-        .btn-primary { background: var(--accent-blue); color: white; margin-top: 20px; }
-
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--accent-blue); color: white; margin-top: 10px; }
         .btn-secondary { background: #e8e8ed; color: var(--text-color); margin-top: 10px; }
 
-        .log-item { border-bottom: 1px solid #d2d2d7; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
+        /* 請求書固有のデザイン */
+        .invoice-header { display: flex; justify-content: space-between; margin-bottom: 30px; }
+        .invoice-title { font-size: 32px; letter-spacing: 0.5em; text-align: center; border-bottom: 2px solid #000; margin-bottom: 30px; padding-bottom: 10px; }
+        
+        .bill-to { font-size: 18px; border-bottom: 1px solid #000; min-width: 300px; margin-bottom: 10px; }
+        .my-info { text-align: right; font-size: 14px; }
 
-        .delete-btn { color: #ff3b30; background: none; border: none; font-weight: 600; cursor: pointer; font-size: 13px; }
-
-        /* 通知トーストの設定 */
-        #toast {
-            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.8); color: white; padding: 12px 24px;
-            border-radius: 25px; font-size: 14px; font-weight: 600;
-            opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200;
+        .grand-total-box { 
+            font-size: 22px; font-weight: 700; border-bottom: 3px double #000; 
+            margin: 40px 0; padding: 10px; display: flex; justify-content: space-between;
         }
 
         .invoice-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .invoice-table th, .invoice-table td { text-align: left; padding: 12px 8px; border-bottom: 1px solid #d2d2d7; font-size: 13px; }
-        .total-amount { font-size: 20px; font-weight: 700; text-align: right; margin-top: 20px; padding: 20px; background: #f5f5f7; border-radius: 12px; }
+        .invoice-table th { background: #f2f2f2; border: 1px solid #d2d2d7; padding: 10px; font-size: 13px; }
+        .invoice-table td { border: 1px solid #d2d2d7; padding: 10px; font-size: 14px; }
+
+        .bank-info { margin-top: 50px; padding: 15px; border: 1px solid #d2d2d7; border-radius: 8px; font-size: 14px; }
 
         .hidden { display: none; }
-        
+        #toast { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: white; padding: 12px 24px; border-radius: 25px; opacity: 0; transition: opacity 0.3s; z-index: 200; pointer-events: none; }
+
         @media print {
-            nav, .no-print { display: none; }
+            nav, .no-print, #toast { display: none !important; }
             body { padding: 0; }
-            .container { max-width: 100%; }
+            .container { max-width: 100%; padding: 0; }
+            .card { background: none; padding: 0; }
         }
     </style>
 </head>
 <body>
 
 <nav>
-    <button onclick="showPage('entry')" id="btn-entry" class="active">現場入力</button>
+    <button onclick="showPage('entry')" id="btn-entry" class="active">入力</button>
     <button onclick="showPage('logs')" id="btn-logs">履歴</button>
     <button onclick="showPage('invoice')" id="btn-invoice">請求書</button>
     <button onclick="showPage('settings')" id="btn-settings">設定</button>
@@ -122,91 +106,114 @@
 
 <div class="container">
     <section id="page-entry">
-        <h1>現場管理入力</h1>
+        <h1>現場入力</h1>
         <div class="card">
-            <div class="form-group">
-                <label>日付</label>
-                <input type="date" id="date">
-            </div>
-            <div class="form-group">
-                <label>現場名</label>
-                <input type="text" id="site-name" placeholder="現場名">
-            </div>
-            <div class="form-group">
-                <label>参加メンバー（タップ：選択 / 2回：出張）</label>
-                <div id="member-selector" class="member-list"></div>
-            </div>
-            <div class="form-group">
-                <label>勤務区分</label>
-                <select id="work-type" onchange="toggleOvertime()">
+            <div class="form-group"><label>日付</label><input type="date" id="date"></div>
+            <div class="form-group"><label>現場名</label><input type="text" id="site-name"></div>
+            <div class="form-group"><label>勤務区分</label>
+                <select id="work-type" onchange="handleWorkTypeChange()">
                     <option value="定時終了">定時終了</option>
                     <option value="残業">残業あり</option>
+                    <option value="移動日100">移動日 (100%)</option>
+                    <option value="移動日50">移動日 (50%)</option>
                 </select>
             </div>
-            <div id="overtime-group" class="form-group hidden">
-                <label>残業時間 (時間)</label>
-                <input type="number" id="overtime-hours" step="0.5" value="0">
+            <div id="overtime-group" class="form-group hidden"><label>残業時間</label><input type="number" id="overtime-hours" step="0.5" value="0"></div>
+            <div class="form-group"><label>基本日当</label><input type="number" id="base-wage" value="18000"></div>
+            <div class="form-group"><label>経費</label><input type="number" id="expenses" value="0"></div>
+            <button class="btn btn-primary" onclick="saveLog()">保存してLINEコピー</button>
+        </div>
+    </section>
+
+    <section id="page-invoice" class="hidden">
+        <div class="no-print">
+            <h1>請求書発行</h1>
+            <div class="card"><label>対象月</label><input type="month" id="invoice-month" onchange="renderInvoice()"></div>
+        </div>
+
+        <div id="invoice-paper" class="card" style="background:white; color:black; padding:40px;">
+            <div class="invoice-title">請求書</div>
+            
+            <div class="invoice-header">
+                <div>
+                    <div id="disp-client-addr" style="font-size:12px;"></div>
+                    <div id="disp-client-name" class="bill-to"></div>
+                    <div style="font-size:14px;">下記の通り、ご請求申し上げます。</div>
+                </div>
+                <div class="my-info">
+                    <div id="disp-my-date" style="margin-bottom:10px;"></div>
+                    <div id="disp-my-name" style="font-weight:bold; font-size:16px;"></div>
+                    <div id="disp-my-addr"></div>
+                    <div id="disp-my-tel"></div>
+                </div>
             </div>
-            <div class="form-group">
-                <label>基本日当 (税込)</label>
-                <input type="number" id="base-wage" value="18000">
+
+            <div class="grand-total-box">
+                <span>ご請求金額</span>
+                <span id="disp-total-amount">¥0 -</span>
             </div>
-            <div class="form-group">
-                <label>経費 (駐車場・材料等)</label>
-                <input type="number" id="expenses" value="0">
+
+            <table class="invoice-table">
+                <thead>
+                    <tr><th>日付</th><th>現場名・摘要</th><th>備考</th><th>金額</th></tr>
+                </thead>
+                <tbody id="invoice-body"></tbody>
+            </table>
+
+            <div class="bank-info">
+                <div style="font-weight:bold; border-bottom:1px solid #ccc; margin-bottom:5px;">お振込先</div>
+                <div id="disp-bank-details"></div>
             </div>
-            <div class="form-group">
-                <label>
-                    <input type="checkbox" id="self-business-trip" style="width:18px; height:18px; vertical-align:middle;"> 
-                    <span style="vertical-align:middle; font-size:14px; margin-left:5px;">自分も出張手当を追加</span>
-                </label>
+        </div>
+        <button class="btn btn-secondary no-print" onclick="window.print()">印刷 / PDF保存</button>
+    </section>
+
+    <section id="page-settings" class="hidden">
+        <h1>設定</h1>
+        <div class="card">
+            <h3>請求先情報（相手）</h3>
+            <div class="form-group"><label>会社名・屋号</label><input type="text" id="set-client-name" onchange="saveConfig()"></div>
+            <div class="form-group"><label>住所</label><input type="text" id="set-client-addr" onchange="saveConfig()"></div>
+        </div>
+        <div class="card">
+            <h3>請求元情報（自分）</h3>
+            <div class="form-group"><label>お名前・会社名</label><input type="text" id="set-my-name" onchange="saveConfig()"></div>
+            <div class="form-group"><label>自分の住所</label><input type="text" id="set-my-addr" onchange="saveConfig()"></div>
+            <div class="form-group"><label>電話番号</label><input type="text" id="set-my-tel" onchange="saveConfig()"></div>
+        </div>
+        <div class="card">
+            <h3>お振込先設定</h3>
+            <div class="form-group"><label>振込口座情報（銀行名、支店、種別、番号、名義）</label>
+                <textarea id="set-bank-info" rows="3" onchange="saveConfig()"></textarea>
             </div>
-            <button class="btn btn-primary" onclick="saveLog()">記録してLINEコピー</button>
         </div>
     </section>
 
     <section id="page-logs" class="hidden"><h1>履歴</h1><div id="logs-list"></div></section>
-    <section id="page-invoice" class="hidden">
-        <h1>請求明細（自分）</h1>
-        <div class="card no-print"><label>月を選択</label><input type="month" id="invoice-month" onchange="renderInvoice()"></div>
-        <div id="invoice-content">
-            <table class="invoice-table"><thead><tr><th>日付</th><th>現場名</th><th>詳細</th><th>請求額</th></tr></thead><tbody id="invoice-body"></tbody></table>
-            <div class="total-amount" id="total-amount">合計: ¥0</div>
-        </div>
-        <button class="btn btn-secondary no-print" onclick="window.print()">PDF/印刷出力</button>
-    </section>
-    <section id="page-settings" class="hidden">
-        <h1>設定</h1>
-        <div class="card">
-            <div class="form-group"><label>出張手当の設定（初期値 1,000円）</label><input type="number" id="setting-trip-pay" value="1000" onchange="saveTripPay()"></div>
-            <div class="form-group"><label>メンバー追加</label><div style="display:flex; gap:10px;"><input type="text" id="new-member-name" placeholder="名前"><button class="btn btn-primary" style="margin:0; width:80px;" onclick="addMember()">追加</button></div></div>
-            <div id="settings-member-list"></div>
-        </div>
-    </section>
 </div>
 
-<div id="toast">LINE用にコピーしました</div>
+<div id="toast">コピーしました</div>
 
 <script>
     let db;
-    const DB_NAME = "WorkLogSystem_v1";
-
+    const DB_NAME = "WorkInvoiceDB";
     const request = indexedDB.open(DB_NAME, 1);
+
     request.onupgradeneeded = (e) => {
         db = e.target.result;
-        if (!db.objectStoreNames.contains("logs")) db.createObjectStore("logs", { keyPath: "id", autoIncrement: true });
-        if (!db.objectStoreNames.contains("members")) db.createObjectStore("members", { keyPath: "name" });
-        if (!db.objectStoreNames.contains("config")) db.createObjectStore("config", { keyPath: "key" });
+        db.createObjectStore("logs", { keyPath: "id", autoIncrement: true });
+        db.createObjectStore("config", { keyPath: "key" });
     };
 
-    request.onsuccess = (e) => { db = e.target.result; loadTripPay(); init(); };
+    request.onsuccess = (e) => {
+        db = e.target.result;
+        loadConfig();
+        init();
+    };
 
     function init() {
         document.getElementById('date').valueAsDate = new Date();
-        const now = new Date();
-        const monthInput = document.getElementById('invoice-month');
-        if(monthInput) monthInput.value = now.toISOString().substring(0, 7);
-        renderMembers();
+        document.getElementById('invoice-month').value = new Date().toISOString().substring(0, 7);
     }
 
     function showPage(pageId) {
@@ -214,85 +221,105 @@
         document.getElementById(`page-${pageId}`).classList.remove('hidden');
         document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
         document.getElementById(`btn-${pageId}`).classList.add('active');
-        if(pageId === 'logs') renderLogs();
         if(pageId === 'invoice') renderInvoice();
+        if(pageId === 'logs') renderLogs();
     }
 
-    function toggleOvertime() {
+    function handleWorkTypeChange() {
         const type = document.getElementById('work-type').value;
         document.getElementById('overtime-group').classList.toggle('hidden', type !== '残業');
     }
 
-    function showToast(text) {
-        const t = document.getElementById('toast');
-        t.innerText = text;
-        t.style.opacity = '1';
-        setTimeout(() => { t.style.opacity = '0'; }, 2000);
+    function saveConfig() {
+        const config = {
+            clientName: document.getElementById('set-client-name').value,
+            clientAddr: document.getElementById('set-client-addr').value,
+            myName: document.getElementById('set-my-name').value,
+            myAddr: document.getElementById('set-my-addr').value,
+            myTel: document.getElementById('set-my-tel').value,
+            bankInfo: document.getElementById('set-bank-info').value
+        };
+        db.transaction("config", "readwrite").objectStore("config").put({ key: "main", value: config });
     }
 
-    async function copyText(text) {
-        try {
-            // navigator.clipboard が使えない環境（非HTTPSなど）への対策
-            if (navigator.clipboard && window.isSecureContext) {
-                await navigator.clipboard.writeText(text);
-                showToast("LINE用にコピーしました");
-            } else {
-                // 代替策（古いスマホなど）
-                const textArea = document.createElement("textarea");
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showToast("LINE用にコピーしました");
+    function loadConfig() {
+        db.transaction("config", "readonly").objectStore("config").get("main").onsuccess = (e) => {
+            if (e.target.result) {
+                const c = e.target.result.value;
+                document.getElementById('set-client-name').value = c.clientName || "";
+                document.getElementById('set-client-addr').value = c.clientAddr || "";
+                document.getElementById('set-my-name').value = c.myName || "";
+                document.getElementById('set-my-addr').value = c.myAddr || "";
+                document.getElementById('set-my-tel').value = c.myTel || "";
+                document.getElementById('set-bank-info').value = c.bankInfo || "";
             }
-        } catch (err) {
-            alert("コピーに失敗しました。手動でコピーしてください。");
-        }
+        };
     }
 
     function saveLog() {
         const date = document.getElementById('date').value;
         const site = document.getElementById('site-name').value;
         const baseWage = parseInt(document.getElementById('base-wage').value);
-        const expenses = parseInt(document.getElementById('expenses').value || 0);
         const workType = document.getElementById('work-type').value;
         const overtime = parseFloat(document.getElementById('overtime-hours').value || 0);
-        const tripPaySetting = parseInt(document.getElementById('setting-trip-pay').value);
-        const selfTrip = document.getElementById('self-business-trip').checked;
-        const members = Array.from(document.querySelectorAll('.member-chip.selected')).map(el => ({ name: el.innerText.replace('出張','').trim(), isTrip: el.classList.contains('business-trip') }));
+        const expenses = parseInt(document.getElementById('expenses').value || 0);
 
         if(!site) { alert("現場名を入力してください"); return; }
 
-        const hourly = baseWage / 8;
-        const ovPay = workType === '残業' ? Math.round(hourly * 1.25 * overtime) : 0;
-        const selfTripPay = selfTrip ? tripPaySetting : 0;
-        const total = baseWage + ovPay + selfTripPay + expenses;
-
-        const log = { date, site, baseWage, workType, overtime, totalWage: total, expenses, tripPay: selfTripPay, members, month: date.substring(0, 7) };
+        let wage = baseWage;
+        if(workType === '移動日50') wage = baseWage * 0.5;
         
-        db.transaction("logs", "readwrite").objectStore("logs").add(log).oncomplete = () => {
-            const d = new Date(log.date);
-            const copyStr = `${d.getMonth()+1}/${d.getDate()}   ${log.site}\n${log.members.map(m => m.isTrip ? m.name+'(出張)' : m.name).join('\n')}\n${log.members.length}名   ${log.workType==='残業' ? '残業'+log.overtime+'時間' : '定時終了'}です。`;
-            copyText(copyStr);
-            
-            document.getElementById('site-name').value = '';
-            document.getElementById('expenses').value = 0;
-            document.querySelectorAll('.member-chip').forEach(el => el.classList.remove('selected', 'business-trip'));
+        const ovPay = workType === '残業' ? Math.round((baseWage / 8) * 1.25 * overtime) : 0;
+        const total = wage + ovPay + expenses;
+
+        const data = { date, site, workType, overtime, total, month: date.substring(0, 7) };
+        db.transaction("logs", "readwrite").objectStore("logs").add(data).oncomplete = () => {
+            alert("保存しました");
+            document.getElementById('site-name').value = "";
         };
     }
 
-    // --- 以降、他関数（addMember, renderLogs 等）は前回同様 ---
-    function saveTripPay() { const val = parseInt(document.getElementById('setting-trip-pay').value); db.transaction("config", "readwrite").objectStore("config").put({ key: "tripPay", value: val }); }
-    function loadTripPay() { db.transaction("config", "readonly").objectStore("config").get("tripPay").onsuccess = (e) => { if(e.target.result) document.getElementById('setting-trip-pay').value = e.target.result.value; }; }
-    function addMember() { const nameInput = document.getElementById('new-member-name'); const name = nameInput.value.trim(); if(!name) return; db.transaction("members", "readwrite").objectStore("members").put({ name }).onsuccess = () => { nameInput.value = ''; renderMembers(); }; }
-    function deleteMember(name) { if(confirm(name + " を削除します？")) db.transaction("members", "readwrite").objectStore("members").delete(name).oncomplete = renderMembers; }
-    function renderMembers() { db.transaction("members", "readonly").objectStore("members").getAll().onsuccess = (e) => { const members = e.target.result; document.getElementById('member-selector').innerHTML = members.map(m => `<div class="member-chip" onclick="handleMemberClick(this)">${m.name}</div>`).join(''); document.getElementById('settings-member-list').innerHTML = members.map(m => `<div class="settings-item"><span>${m.name}</span><button class="delete-btn" onclick="deleteMember('${m.name}')">削除</button></div>`).join(''); }; }
-    function handleMemberClick(el) { if (!el.classList.contains('selected')) el.classList.add('selected'); else if (!el.classList.contains('business-trip')) el.classList.add('business-trip'); else el.classList.remove('selected', 'business-trip'); }
-    function deleteLog(id) { if(confirm("削除しますか？")) db.transaction("logs", "readwrite").objectStore("logs").delete(id).oncomplete = renderLogs; }
-    function renderLogs() { db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => { const logs = e.target.result.sort((a, b) => new Date(b.date) - new Date(a.date)); document.getElementById('logs-list').innerHTML = logs.map(l => `<div class="log-item"><div><div style="font-size:11px; color:var(--sub-text)">${l.date}</div><div style="font-weight:700">${l.site}</div><div style="font-size:13px;">¥${l.totalWage.toLocaleString()}</div></div><button class="delete-btn" onclick="deleteLog(${l.id})">削除</button></div>`).join(''); }; }
-    function renderInvoice() { const target = document.getElementById('invoice-month').value; let total = 0; db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => { const filtered = e.target.result.filter(l => l.month === target).sort((a, b) => new Date(a.date) - new Date(b.date)); document.getElementById('invoice-body').innerHTML = filtered.map(l => { total += l.totalWage; return `<tr><td>${l.date}</td><td>${l.site}</td><td>日当等</td><td>¥${l.totalWage.toLocaleString()}</td></tr>`; }).join(''); document.getElementById('total-amount').innerText = `合計: ¥${total.toLocaleString()}`; }; }
+    function renderInvoice() {
+        const targetMonth = document.getElementById('invoice-month').value;
+        const clientName = document.getElementById('set-client-name').value;
+        
+        document.getElementById('disp-client-name').innerText = clientName ? clientName + " 御中" : "";
+        document.getElementById('disp-client-addr').innerText = document.getElementById('set-client-addr').value;
+        document.getElementById('disp-my-name').innerText = document.getElementById('set-my-name').value;
+        document.getElementById('disp-my-addr').innerText = document.getElementById('set-my-addr').value;
+        document.getElementById('disp-my-tel').innerText = document.getElementById('set-my-tel').value;
+        document.getElementById('disp-bank-details').innerText = document.getElementById('set-bank-info').value;
+        document.getElementById('disp-my-date').innerText = "発行日: " + new Date().toLocaleDateString();
+
+        let totalAmount = 0;
+        db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => {
+            const logs = e.target.result.filter(l => l.month === targetMonth).sort((a,b) => new Date(a.date) - new Date(b.date));
+            const html = logs.map(l => {
+                totalAmount += l.total;
+                return `<tr><td>${l.date}</td><td>${l.site}</td><td>${l.workType}${l.overtime > 0 ? '('+l.overtime+'h)':''}</td><td>¥${l.total.toLocaleString()}</td></tr>`;
+            }).join('');
+            document.getElementById('invoice-body').innerHTML = html;
+            document.getElementById('disp-total-amount').innerText = "¥ " + totalAmount.toLocaleString() + " -";
+        };
+    }
+
+    function renderLogs() {
+        db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => {
+            const logs = e.target.result.sort((a,b) => new Date(b.date) - new Date(a.date));
+            document.getElementById('logs-list').innerHTML = logs.map(l => `
+                <div class="card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <div><b>${l.date}</b><br>${l.site}<br>¥${l.total.toLocaleString()}</div>
+                    <button class="btn" style="width:60px; background:#ff3b30; color:white; padding:8px; font-size:12px;" onclick="deleteLog(${l.id})">削除</button>
+                </div>
+            `).join('');
+        };
+    }
+
+    function deleteLog(id) {
+        if(confirm("削除しますか？")) {
+            db.transaction("logs", "readwrite").objectStore("logs").delete(id).oncomplete = renderLogs;
+        }
+    }
 </script>
 </body>
 </html>
-

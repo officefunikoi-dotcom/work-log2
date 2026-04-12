@@ -22,6 +22,7 @@
             color: var(--apple-text);
             margin: 0;
             padding-bottom: 80px;
+            overflow-x: hidden; /* 全体のはみ出し防止 */
         }
 
         /* ナビゲーション */
@@ -40,39 +41,42 @@
 
         .container { max-width: 900px; margin: 0 auto; padding: 16px; }
         
-        /* 入力フォーム用カード */
         .card {
             background: var(--apple-card); padding: 20px;
             border-radius: var(--apple-radius); margin-bottom: 16px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
 
-        /* A4書類プレビュー設定 */
+        /* --- A4書類プレビュー設定 (はみ出し修正版) --- */
+        .a4-container {
+            width: 100%;
+            overflow: hidden; /* 子要素のtransformによるはみ出しをカット */
+            display: flex;
+            justify-content: center;
+        }
+
         .a4-page {
-            width: 210mm; /* A4固定幅 */
+            width: 210mm;
             min-height: 297mm;
             padding: 15mm;
-            margin: 20px auto;
             background: white;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             transform-origin: top center;
             color: #000;
+            margin-bottom: 20px;
         }
 
-        /* スマホでの自動スケーリング (スクロール防止) */
+        /* スマホでの自動スケーリング設定 */
         @media screen and (max-width: 768px) {
-            #page-attendance, #page-invoice {
-                overflow-x: hidden;
-            }
             .a4-page {
-                /* 画面幅に合わせて縮小計算 (少し余裕を持たせて220mmで割る) */
-                transform: scale(calc(100vw / 225mm));
-                margin-top: 10px;
-                margin-left: calc((100vw - 210mm * (100vw / 225mm)) / 2);
-                margin-bottom: -180mm; /* 縮小で空いた下のスペースを詰める */
+                /* 画面幅の92%に収まるように倍率を計算 */
+                transform: scale(calc(92vw / 210mm));
+                /* 縮小によって発生する下の空白をネガティブマージンで相殺 */
+                margin-bottom: calc(-297mm * (1 - (92vw / 210mm)));
             }
         }
 
+        /* 共通UIパーツ */
         .form-group { margin-bottom: 15px; }
         label { display: block; font-size: 13px; font-weight: 600; color: var(--apple-sub); margin-bottom: 5px; }
         input, select, textarea {
@@ -95,11 +99,11 @@
         .btn-secondary { background: #e8e8ed; color: var(--apple-text); margin-top: 10px; }
         .btn-danger { background: #ff3b30; color: white; padding: 6px 10px; font-size: 11px; border-radius: 6px; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #000; padding: 8px; font-size: 12px; text-align: left; }
+        /* A4内テーブル */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+        th, td { border: 1px solid #000; padding: 8px; font-size: 12px; text-align: left; word-wrap: break-word; }
         th { background: #f2f2f2; }
 
-        /* 請求書・出勤簿タイトル */
         .invoice-title { font-size: 26px; text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 20px; letter-spacing: 10px; }
         .total-box { font-size: 20px; font-weight: bold; border-bottom: 3px double #000; padding: 5px; margin: 20px 0; display: flex; justify-content: space-between; }
         .bank-info { border: 1px solid #000; padding: 10px; margin-top: 15px; font-size: 12px; white-space: pre-wrap; width: fit-content; min-width: 250px; }
@@ -109,13 +113,11 @@
 
         @media print {
             @page { size: A4; margin: 10mm; }
-            nav, .no-print, .btn, #toast { display: none !important; }
+            nav, .no-print, .btn, #toast, .card { display: none !important; }
             body { background: #fff; padding: 0; }
             .container { max-width: 100%; padding: 0; margin: 0; }
-            .a4-page {
-                width: 100%; height: auto; padding: 0; margin: 0;
-                box-shadow: none; transform: none !important;
-            }
+            .a4-container { display: block; overflow: visible; }
+            .a4-page { width: 100%; height: auto; padding: 0; margin: 0; box-shadow: none; transform: none !important; }
         }
     </style>
 </head>
@@ -139,7 +141,7 @@
                 <input type="text" id="site-name" placeholder="現場名" list="site-list">
                 <datalist id="site-list"></datalist>
             </div>
-            <div class="form-group"><label>同行したメンバー</label><div id="member-selector" class="member-list"></div></div>
+            <div class="form-group"><label>同行メンバー</label><div id="member-selector" class="member-list"></div></div>
             <div class="form-group">
                 <label>勤務区分</label>
                 <select id="work-type" onchange="toggleOvertime()">
@@ -163,68 +165,77 @@
         <div class="card no-print">
             <label>表示月</label><input type="month" id="att-month" onchange="renderAttendance()">
         </div>
-        <div class="a4-page">
-            <h2 id="att-title" style="text-align:center; font-size:22px; margin-bottom:20px;"></h2>
-            <table>
-                <thead><tr><th>日付</th><th>現場名</th><th>人員</th><th>区分</th><th>メモ</th><th class="no-print">操作</th></tr></thead>
-                <tbody id="att-body"></tbody>
-            </table>
+        <div class="a4-container">
+            <div class="a4-page">
+                <h2 id="att-title" style="text-align:center; font-size:22px; margin-bottom:20px;"></h2>
+                <table>
+                    <thead><tr><th style="width:15%">日付</th><th style="width:25%">現場名</th><th style="width:25%">人員</th><th style="width:15%">区分</th><th>メモ</th><th class="no-print" style="width:40px">操作</th></tr></thead>
+                    <tbody id="att-body"></tbody>
+                </table>
+            </div>
         </div>
-        <button class="btn btn-secondary no-print" onclick="window.print()" style="margin-top:20px">印刷 / PDF保存</button>
+        <button class="btn btn-secondary no-print" onclick="window.print()" style="margin-top:10px">印刷 / PDF保存</button>
     </section>
 
     <section id="page-invoice" class="hidden">
         <div class="card no-print">
             <label>請求月</label><input type="month" id="inv-month" onchange="renderInvoice()">
         </div>
-        <div class="a4-page">
-            <div class="invoice-title">請求書</div>
-            <div style="display:flex; justify-content:space-between; align-items:flex-start">
-                <div>
-                    <div id="disp-c-addr" style="font-size:12px"></div>
-                    <div id="disp-c-name" style="font-size:18px; border-bottom:1px solid #000; min-width:250px; padding:5px 0;"></div>
-                    <div style="margin-top:5px">下記の通り、ご請求申し上げます。</div>
+        <div class="a4-container">
+            <div class="a4-page">
+                <div class="invoice-title">請求書</div>
+                <div style="display:flex; justify-content:space-between; align-items:flex-start">
+                    <div>
+                        <div id="disp-c-addr" style="font-size:11px"></div>
+                        <div id="disp-c-name" style="font-size:18px; border-bottom:1px solid #000; min-width:230px; padding:5px 0;"></div>
+                        <div style="margin-top:5px">下記の通り、ご請求申し上げます。</div>
+                    </div>
+                    <div style="text-align:right">
+                        <div id="disp-date" style="font-size:11px"></div>
+                        <div id="disp-m-name" style="font-weight:bold; font-size:16px; margin-top:5px;"></div>
+                        <div id="disp-m-addr" style="font-size:10px"></div>
+                        <div id="disp-m-tel" style="font-size:10px"></div>
+                    </div>
                 </div>
-                <div style="text-align:right">
-                    <div id="disp-date"></div>
-                    <div id="disp-m-name" style="font-weight:bold; font-size:16px"></div>
-                    <div id="disp-m-addr" style="font-size:12px"></div>
-                    <div id="disp-m-tel" style="font-size:12px"></div>
-                </div>
+                <div class="total-box"><span>ご請求金額</span><span id="disp-total"></span></div>
+                <table>
+                    <thead><tr><th style="width:18%">日付</th><th>現場名・摘要</th><th style="width:20%">備考</th><th style="width:20%">金額</th></tr></thead>
+                    <tbody id="inv-body"></tbody>
+                </table>
+                <div class="bank-info" id="disp-bank"></div>
             </div>
-            <div class="total-box"><span>ご請求金額</span><span id="disp-total"></span></div>
-            <table>
-                <thead><tr><th style="width:15%">日付</th><th>現場名・摘要</th><th style="width:20%">備考</th><th style="width:20%">金額</th></tr></thead>
-                <tbody id="inv-body"></tbody>
-            </table>
-            <div class="bank-info" id="disp-bank"></div>
         </div>
-        <button class="btn btn-secondary no-print" onclick="window.print()" style="margin-top:20px">印刷 / PDF保存</button>
+        <button class="btn btn-secondary no-print" onclick="window.print()" style="margin-top:10px">印刷 / PDF保存</button>
     </section>
 
     <section id="page-settings" class="hidden">
         <div class="card">
-            <h2>名簿設定</h2>
+            <h3>同行者名簿</h3>
             <div style="display:flex; gap:10px; margin-bottom:10px;"><input type="text" id="new-member" placeholder="氏名"><button class="btn btn-primary" style="width:80px; padding:10px;" onclick="addMember()">追加</button></div>
             <div id="settings-member-list"></div>
         </div>
+
         <div class="card">
-            <h2>金額・情報設定</h2>
-            <div class="form-group"><label>標準日当</label><input type="number" id="set-base-wage" onchange="saveConfig()"></div>
-            <div class="form-group"><label>出張手当</label><input type="number" id="set-trip-pay" onchange="saveConfig()"></div>
-            <hr>
+            <h3>金額・手当設定</h3>
+            <div class="form-group"><label>標準日当 (円)</label><input type="number" id="set-base-wage" onchange="saveConfig()"></div>
+            <div class="form-group"><label>出張手当 (円)</label><input type="number" id="set-trip-pay" onchange="saveConfig()"></div>
+        </div>
+
+        <div class="card">
+            <h3>請求情報設定</h3>
             <div class="form-group"><label>請求先 会社名</label><input type="text" id="set-c-name" onchange="saveConfig()"></div>
             <div class="form-group"><label>請求先 住所</label><input type="text" id="set-c-addr" onchange="saveConfig()"></div>
-            <hr>
-            <div class="form-group"><label>自社/自分の氏名</label><input type="text" id="set-m-name" onchange="saveConfig()"></div>
-            <div class="form-group"><label>自分の住所</label><input type="text" id="set-m-addr" onchange="saveConfig()"></div>
+            <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+            <div class="form-group"><label>請求元 氏名</label><input type="text" id="set-m-name" onchange="saveConfig()"></div>
+            <div class="form-group"><label>請求元 住所</label><input type="text" id="set-m-addr" onchange="saveConfig()"></div>
             <div class="form-group"><label>電話番号</label><input type="text" id="set-m-tel" onchange="saveConfig()"></div>
-            <div class="form-group"><label>振込先口座情報</label><textarea id="set-bank" rows="3" onchange="saveConfig()"></textarea></div>
+            <div class="form-group"><label>振込先情報</label><textarea id="set-bank" rows="3" onchange="saveConfig()"></textarea></div>
         </div>
+
         <div class="card">
-            <h2>バックアップ</h2>
+            <h3>データ管理</h3>
             <button class="btn btn-secondary" onclick="exportData()">バックアップ保存</button>
-            <div style="margin-top:10px;"><label>復元</label><input type="file" onchange="importData(event)"></div>
+            <div style="margin-top:15px;"><label>復元</label><input type="file" onchange="importData(event)"></div>
         </div>
     </section>
 </div>
@@ -232,8 +243,9 @@
 <div id="toast"></div>
 
 <script>
+    /* JavaScriptロジックは前回同様 (IndexedDB, 各レンダリング機能) */
     let db;
-    const request = indexedDB.open("FieldProA4V1", 1);
+    const request = indexedDB.open("FieldProA4V3", 1);
 
     request.onupgradeneeded = (e) => {
         db = e.target.result;
@@ -277,9 +289,7 @@
         document.getElementById('overtime-wrap').style.display = (document.getElementById('work-type').value === '残業') ? 'block' : 'none';
     }
 
-    function confirmSave() {
-        if(confirm("登録してもよろしいですか？")) saveLog();
-    }
+    function confirmSave() { if(confirm("登録しますか？")) saveLog(); }
 
     async function saveLog() {
         const id = document.getElementById('edit-id').value;
@@ -298,8 +308,7 @@
         const conf = await new Promise(r => db.transaction("config").objectStore("config").get("main").onsuccess = e => r(e.target.result?.value || {}));
         const tripAmount = tripCheck ? parseInt(conf.tripPay || 1000) : 0;
 
-        let total = base;
-        if(type === '移動日50') total = base * 0.5;
+        let total = (type === '移動日50') ? base * 0.5 : base;
         if(type === '残業') total += Math.floor((base / 8) * 1.25 * ot);
         total += exp + tripAmount;
 
@@ -309,7 +318,7 @@
         db.transaction("logs", "readwrite").objectStore("logs").put(data).onsuccess = () => {
             copyToLine(data, conf.mName || "自分");
             clearEntryForm();
-            showToast("登録完了・コピーしました");
+            showToast("登録・コピー完了");
             updateSiteDatalist();
         };
     }
@@ -317,14 +326,9 @@
     function copyToLine(d, myName) {
         const dt = new Date(d.date);
         const dateStr = `${dt.getMonth()+1}/${dt.getDate()}`;
-        const myLast = getLastName(myName);
-        const membersStr = [myLast, ...d.members.map(getLastName)].join(' ');
+        const membersStr = [getLastName(myName), ...d.members.map(getLastName)].join(' ');
         const count = d.members.length + 1;
-
-        let msg = (d.type === '残業') 
-            ? `${dateStr}  ${d.site}　${membersStr}　${count}名 残業${d.ot}時間です。`
-            : `${dateStr}  ${d.site}　${membersStr}　${count}名 定時終了です。`;
-        
+        const msg = `${dateStr} ${d.site} ${membersStr} ${count}名 ${d.type === '残業' ? '残業'+d.ot+'h' : '定時終了'}です。`;
         if(navigator.clipboard) navigator.clipboard.writeText(msg);
     }
 
@@ -341,7 +345,7 @@
                     <tr>
                         <td>${l.date.substring(5)}</td>
                         <td>${l.site}</td>
-                        <td>${[myName, ...l.members.map(getLastName)].join(' ')} (計${l.members.length+1}名)</td>
+                        <td>${[myName, ...l.members.map(getLastName)].join(' ')}</td>
                         <td>${l.type}${l.ot > 0 ? l.ot+'h' : ''}</td>
                         <td style="font-size:10px">${l.memo}</td>
                         <td class="no-print">
@@ -370,8 +374,7 @@
                 let gTotal = 0;
                 document.getElementById('inv-body').innerHTML = logs.map(l => {
                     gTotal += l.total;
-                    let biko = l.type;
-                    if(l.ot > 0) biko += `(${l.ot}h)`;
+                    let biko = l.type + (l.ot > 0 ? `(${l.ot}h)` : "");
                     if(l.tripAmount > 0) biko += " +出張";
                     if(l.exp > 0) biko += " +経費";
                     return `<tr><td>${l.date}</td><td>${l.site}</td><td>${biko}</td><td>¥${l.total.toLocaleString()}</td></tr>`;
@@ -403,7 +406,7 @@
     }
 
     function deleteLog(id) {
-        if(confirm("このデータを完全に削除しますか？")) {
+        if(confirm("データを削除しますか？")) {
             db.transaction("logs", "readwrite").objectStore("logs").delete(id).onsuccess = renderAttendance;
         }
     }
@@ -433,7 +436,7 @@
     }
 
     function deleteMember(name) {
-        if(confirm(name + "を名簿から削除しますか？")) {
+        if(confirm(name + "を削除しますか？")) {
             db.transaction("members", "readwrite").objectStore("members").delete(name).onsuccess = () => {
                 renderSettingsMembers(); renderMemberSelector();
             };
@@ -503,7 +506,7 @@
         const config = await new Promise(r => db.transaction("config").objectStore("config").getAll().onsuccess = e => r(e.target.result));
         const members = await new Promise(r => db.transaction("members").objectStore("members").getAll().onsuccess = e => r(e.target.result));
         const blob = new Blob([JSON.stringify({ logs, config, members })], {type: "application/json"});
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `manager_backup.json`; a.click();
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `fieldpro_backup.json`; a.click();
     }
 
     function importData(ev) {

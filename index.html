@@ -25,7 +25,7 @@
             overflow-x: hidden;
         }
 
-        /* ナビゲーション - 洗練されたAppleスタイル */
+        /* ナビゲーション */
         nav {
             position: sticky; top: 0;
             background: rgba(255, 255, 255, 0.85);
@@ -36,7 +36,7 @@
         }
         nav button {
             background: none; border: none; font-size: 13px; font-weight: 500;
-            color: var(--apple-sub); cursor: pointer; transition: 0.2s;
+            color: var(--apple-sub); cursor: pointer;
         }
         nav button.active { color: var(--apple-text); font-weight: 700; border-bottom: 2px solid var(--apple-text); }
 
@@ -50,7 +50,7 @@
 
         h2 { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 24px; }
 
-        /* --- A4書類プレビュー (スマホ最適化版) --- */
+        /* A4書類プレビュー */
         .a4-wrapper {
             width: 100%;
             display: flex;
@@ -74,55 +74,51 @@
 
         @media screen and (max-width: 768px) {
             .a4-page {
-                /* 画面幅ギリギリまで拡大 (96vw) */
                 transform: scale(calc(96vw / 210mm));
                 margin-bottom: calc(-297mm * (1 - (96vw / 210mm)));
             }
         }
 
-        /* 入力フォームパーツ */
+        /* 入力フォーム */
         .form-group { margin-bottom: 18px; }
         label { display: block; font-size: 14px; font-weight: 600; color: var(--apple-sub); margin-bottom: 8px; }
         input, select, textarea {
             width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #d2d2d7;
-            font-size: 16px; background: #fff; appearance: none;
+            font-size: 16px; background: #fff;
         }
-        input:focus { border-color: var(--apple-blue); outline: none; }
 
         .member-list { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
         .member-chip {
             padding: 10px 18px; border-radius: 25px; background: #f0f0f2;
-            font-size: 15px; cursor: pointer; color: var(--apple-text);
+            font-size: 15px; cursor: pointer;
         }
         .member-chip.selected { background: var(--apple-blue); color: #fff; font-weight: 600; }
 
         .btn {
             display: block; width: 100%; padding: 18px; border-radius: var(--apple-radius);
-            font-size: 17px; font-weight: 600; text-align: center; border: none; cursor: pointer; transition: 0.2s;
+            font-size: 17px; font-weight: 600; text-align: center; border: none; cursor: pointer;
         }
         .btn-primary { background: var(--apple-blue); color: white; }
-        .btn-primary:active { opacity: 0.7; }
         .btn-secondary { background: #e8e8ed; color: var(--apple-text); margin-top: 12px; }
         .btn-danger { background: #ff3b30; color: white; padding: 6px 12px; font-size: 12px; border-radius: 8px; }
 
         /* A4内テーブル */
         table { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
-        th, td { border: 1px solid #000; padding: 10px; font-size: 12px; text-align: left; overflow: hidden; }
+        th, td { border: 1px solid #000; padding: 8px; font-size: 12px; text-align: left; overflow: hidden; word-wrap: break-word; }
         th { background: #f2f2f2; font-weight: bold; }
 
         .invoice-title { font-size: 28px; text-align: center; border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 30px; letter-spacing: 15px; font-weight: bold; }
         .total-box { font-size: 22px; font-weight: bold; border-bottom: 4px double #000; padding: 10px 5px; margin: 30px 0; display: flex; justify-content: space-between; }
-        .bank-info { border: 1px solid #000; padding: 15px; margin-top: 20px; font-size: 13px; white-space: pre-wrap; display: inline-block; min-width: 300px; }
+        .bank-info { border: 1px solid #000; padding: 15px; margin-top: 20px; font-size: 13px; white-space: pre-wrap; width: fit-content; min-width: 300px; }
 
-        #toast { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; border-radius: 30px; opacity: 0; transition: 0.4s; z-index: 2000; font-size: 14px; }
+        #toast { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; border-radius: 30px; opacity: 0; transition: 0.4s; z-index: 2000; pointer-events: none; }
         .hidden { display: none; }
 
         @media print {
-            nav, .no-print, .btn, #toast, .card, .card h2 { display: none !important; }
+            nav, .no-print, .btn, #toast, .card { display: none !important; }
             body { background: #fff; padding: 0; }
-            .container { max-width: 100%; padding: 0; }
             .a4-wrapper { display: block; background: none; padding: 0; }
-            .a4-page { width: 100%; box-shadow: none; transform: none !important; margin: 0; padding: 0; }
+            .a4-page { width: 100%; box-shadow: none; transform: none !important; margin: 0; }
         }
     </style>
 </head>
@@ -138,17 +134,13 @@
 <div class="container">
     <section id="page-entry">
         <div class="card">
-            <h2>現場管理入力</h2>
+            <h2>日報入力</h2>
             <input type="hidden" id="edit-id">
             <div class="form-group"><label>日付</label><input type="date" id="date"></div>
+            <div class="form-group"><label>現場名</label><input type="text" id="site-name" placeholder="現場名" list="site-list"><datalist id="site-list"></datalist></div>
+            <div class="form-group"><label>同行メンバー</label><div id="member-selector" class="member-list"></div></div>
             <div class="form-group">
-                <label>現場名</label>
-                <input type="text" id="site-name" placeholder="現場名" list="site-list">
-                <datalist id="site-list"></datalist>
-            </div>
-            <div class="form-group"><label>同行したメンバー (記録用)</label><div id="member-selector" class="member-list"></div></div>
-            <div class="form-group">
-                <label>勤務・移動区分</label>
+                <label>勤務区分</label>
                 <select id="work-type" onchange="toggleOvertime()">
                     <option value="定時終了">定時終了</option>
                     <option value="残業">残業あり</option>
@@ -156,9 +148,9 @@
                     <option value="移動日50">移動日 (50%)</option>
                 </select>
             </div>
-            <div id="overtime-wrap" class="form-group" style="display:none"><label>残業時間 (h)</label><input type="number" id="overtime-hours" step="0.5" value="0"></div>
+            <div id="overtime-wrap" class="form-group" style="display:none"><label>残業時間</label><input type="number" id="overtime-hours" step="0.5" value="0"></div>
             <div class="form-group"><label>基本日当</label><input type="number" id="base-wage"></div>
-            <div class="form-group"><label style="display:flex; align-items:center; gap:8px; cursor:pointer;"><input type="checkbox" id="is-trip" style="width:20px; height:20px;"> 出張手当を追加</label></div>
+            <div class="form-group"><label style="display:flex; align-items:center; gap:10px;"><input type="checkbox" id="is-trip" style="width:20px;height:20px;"> 出張手当を追加</label></div>
             <div class="form-group"><label>経費</label><input type="number" id="expenses" value="0"></div>
             <div class="form-group"><label>メモ</label><textarea id="memo" rows="2"></textarea></div>
             <button class="btn btn-primary" onclick="confirmSave()">保存してLINEコピー</button>
@@ -168,13 +160,13 @@
 
     <section id="page-attendance" class="hidden">
         <div class="card no-print">
-            <label>表示月を選択</label><input type="month" id="att-month" onchange="renderAttendance()">
+            <label>表示月</label><input type="month" id="att-month" onchange="renderAttendance()">
         </div>
         <div class="a4-wrapper">
             <div class="a4-page">
-                <h2 id="att-title" style="margin-top:0; font-size:22px;"></h2>
+                <h2 id="att-title" style="margin-top:0; font-size:22px; text-align:center;"></h2>
                 <table>
-                    <thead><tr><th style="width:14%">日付</th><th style="width:28%">現場名</th><th style="width:28%">人員</th><th style="width:15%">区分</th><th>メモ</th><th class="no-print" style="width:40px"></th></tr></thead>
+                    <thead><tr><th style="width:14%">日付</th><th style="width:25%">現場名</th><th style="width:25%">人員</th><th style="width:14%">区分</th><th>メモ</th><th class="no-print" style="width:55px">操作</th></tr></thead>
                     <tbody id="att-body"></tbody>
                 </table>
             </div>
@@ -184,12 +176,12 @@
 
     <section id="page-invoice" class="hidden">
         <div class="card no-print">
-            <label>請求月を選択</label><input type="month" id="inv-month" onchange="renderInvoice()">
+            <label>請求月</label><input type="month" id="inv-month" onchange="renderInvoice()">
         </div>
         <div class="a4-wrapper">
             <div class="a4-page">
                 <div class="invoice-title">請求書</div>
-                <div style="display:flex; justify-content:space-between; align-items:flex-start">
+                <div style="display:flex; justify-content:space-between">
                     <div>
                         <div id="disp-c-addr" style="font-size:11px"></div>
                         <div id="disp-c-name" style="font-size:18px; border-bottom:1px solid #000; min-width:240px; padding:5px 0; font-weight:bold;"></div>
@@ -206,6 +198,20 @@
                 <table>
                     <thead><tr><th style="width:18%">日付</th><th>現場名・摘要</th><th style="width:22%">備考</th><th style="width:20%">金額</th></tr></thead>
                     <tbody id="inv-body"></tbody>
+                    <tfoot id="inv-footer">
+                        <tr>
+                            <td colspan="3" style="text-align:right; font-weight:bold;">小計</td>
+                            <td id="inv-subtotal" style="text-align:right"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="text-align:right; font-weight:bold;">消費税 (内税10%)</td>
+                            <td id="inv-tax" style="text-align:right"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" style="text-align:right; font-weight:bold; background:#f2f2f2;">合計</td>
+                            <td id="inv-grand-total" style="text-align:right; font-weight:bold; background:#f2f2f2;"></td>
+                        </tr>
+                    </tfoot>
                 </table>
                 <div class="bank-info" id="disp-bank"></div>
             </div>
@@ -215,32 +221,24 @@
 
     <section id="page-settings" class="hidden">
         <div class="card">
-            <h3 style="margin-top:0">同行者名簿</h3>
+            <h3>同行者名簿</h3>
             <div style="display:flex; gap:10px; margin-bottom:15px;"><input type="text" id="new-member" placeholder="氏名"><button class="btn btn-primary" style="width:80px; padding:0;" onclick="addMember()">追加</button></div>
             <div id="settings-member-list"></div>
         </div>
-
         <div class="card">
-            <h3 style="margin-top:0">金額・手当設定</h3>
-            <div class="form-group"><label>標準日当 (円)</label><input type="number" id="set-base-wage" onchange="saveConfig()"></div>
-            <div class="form-group"><label>出張手当 (円)</label><input type="number" id="set-trip-pay" onchange="saveConfig()"></div>
+            <h3>金額・手当設定</h3>
+            <div class="form-group"><label>標準日当</label><input type="number" id="set-base-wage" onchange="saveConfig()"></div>
+            <div class="form-group"><label>出張手当</label><input type="number" id="set-trip-pay" onchange="saveConfig()"></div>
         </div>
-
         <div class="card">
-            <h3 style="margin-top:0">請求情報設定</h3>
+            <h3>請求情報設定</h3>
             <div class="form-group"><label>請求先 会社名</label><input type="text" id="set-c-name" onchange="saveConfig()"></div>
             <div class="form-group"><label>請求先 住所</label><input type="text" id="set-c-addr" onchange="saveConfig()"></div>
-            <hr style="border:0; border-top:1px solid #eee; margin:25px 0;">
+            <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
             <div class="form-group"><label>請求元 氏名</label><input type="text" id="set-m-name" onchange="saveConfig()"></div>
             <div class="form-group"><label>請求元 住所</label><input type="text" id="set-m-addr" onchange="saveConfig()"></div>
             <div class="form-group"><label>電話番号</label><input type="text" id="set-m-tel" onchange="saveConfig()"></div>
-            <div class="form-group"><label>振込先口座情報</label><textarea id="set-bank" rows="3" onchange="saveConfig()" placeholder="〇〇銀行 〇〇支店..."></textarea></div>
-        </div>
-
-        <div class="card">
-            <h3 style="margin-top:0">データ管理</h3>
-            <button class="btn btn-secondary" onclick="exportData()">バックアップ保存 (JSON)</button>
-            <div style="margin-top:20px;"><label>データを復元</label><input type="file" onchange="importData(event)"></div>
+            <div class="form-group"><label>振込先</label><textarea id="set-bank" rows="3" onchange="saveConfig()"></textarea></div>
         </div>
     </section>
 </div>
@@ -249,7 +247,7 @@
 
 <script>
     let db;
-    const request = indexedDB.open("FieldProA4_Final", 1);
+    const request = indexedDB.open("FieldProA4_Final_V5", 1);
 
     request.onupgradeneeded = (e) => {
         db = e.target.result;
@@ -293,7 +291,7 @@
         document.getElementById('overtime-wrap').style.display = (document.getElementById('work-type').value === '残業') ? 'block' : 'none';
     }
 
-    function confirmSave() { if(confirm("日報を登録しますか？")) saveLog(); }
+    function confirmSave() { if(confirm("登録しますか？")) saveLog(); }
 
     async function saveLog() {
         const id = document.getElementById('edit-id').value;
@@ -322,7 +320,7 @@
         db.transaction("logs", "readwrite").objectStore("logs").put(data).onsuccess = () => {
             copyToLine(data, conf.mName || "自分");
             clearEntryForm();
-            showToast("登録・コピーしました");
+            showToast("登録・コピー完了");
             updateSiteDatalist();
         };
     }
@@ -353,7 +351,8 @@
                         <td>${l.type === '残業' ? '残業'+l.ot+'h' : l.type}</td>
                         <td style="font-size:10px">${l.memo}</td>
                         <td class="no-print" style="text-align:center">
-                            <button onclick="editLog(${l.id})" style="border:none; background:none; color:var(--apple-blue); font-size:10px; padding:0; cursor:pointer;">修正</button>
+                            <button onclick="editLog(${l.id})" style="color:var(--apple-blue); border:none; background:none; font-size:10px; cursor:pointer; padding:2px;">修正</button>
+                            <button onclick="deleteLog(${l.id})" style="color:#ff3b30; border:none; background:none; font-size:10px; cursor:pointer; padding:2px;">削除</button>
                         </td>
                     </tr>`).join('');
             };
@@ -382,7 +381,14 @@
                     if(l.exp > 0) biko += " +経費";
                     return `<tr><td>${l.date.replace(/-/g,'/')}</td><td>${l.site}</td><td>${biko}</td><td style="text-align:right">¥${l.total.toLocaleString()}</td></tr>`;
                 }).join('');
+
+                const tax = Math.floor(gTotal - (gTotal / 1.1));
+                const subtotal = gTotal - tax;
+
                 document.getElementById('disp-total').innerText = "¥ " + gTotal.toLocaleString() + " -";
+                document.getElementById('inv-subtotal').innerText = "¥" + subtotal.toLocaleString();
+                document.getElementById('inv-tax').innerText = "¥" + tax.toLocaleString();
+                document.getElementById('inv-grand-total').innerText = "¥" + gTotal.toLocaleString();
             };
         };
     }
@@ -406,6 +412,12 @@
                 el.classList.toggle('selected', l.members.includes(el.innerText));
             });
         };
+    }
+
+    function deleteLog(id) {
+        if(confirm("削除しますか？")) {
+            db.transaction("logs", "readwrite").objectStore("logs").delete(id).onsuccess = renderAttendance;
+        }
     }
 
     function addMember() {
@@ -433,11 +445,7 @@
     }
 
     function deleteMember(name) {
-        if(confirm(name + "を削除しますか？")) {
-            db.transaction("members", "readwrite").objectStore("members").delete(name).onsuccess = () => {
-                renderSettingsMembers(); renderMemberSelector();
-            };
-        }
+        db.transaction("members", "readwrite").objectStore("members").delete(name).onsuccess = () => { renderSettingsMembers(); renderMemberSelector(); };
     }
 
     function saveConfig() {
@@ -484,7 +492,7 @@
     function showToast(m) {
         const t = document.getElementById('toast');
         t.innerText = m; t.style.opacity = 1;
-        setTimeout(() => t.style.opacity = 0, 2500);
+        setTimeout(() => t.style.opacity = 0, 2000);
     }
 
     function clearEntryForm() {
@@ -496,27 +504,6 @@
         document.getElementById('cancel-edit').style.display = "none";
         document.querySelectorAll('#member-selector .member-chip').forEach(el => el.classList.remove('selected'));
         init();
-    }
-
-    async function exportData() {
-        const logs = await new Promise(r => db.transaction("logs").objectStore("logs").getAll().onsuccess = e => r(e.target.result));
-        const config = await new Promise(r => db.transaction("config").objectStore("config").getAll().onsuccess = e => r(e.target.result));
-        const members = await new Promise(r => db.transaction("members").objectStore("members").getAll().onsuccess = e => r(e.target.result));
-        const blob = new Blob([JSON.stringify({ logs, config, members })], {type: "application/json"});
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `fieldpro_backup.json`; a.click();
-    }
-
-    function importData(ev) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const data = JSON.parse(e.target.result);
-            const tx = db.transaction(["logs", "config", "members"], "readwrite");
-            tx.objectStore("logs").clear(); data.logs.forEach(l => tx.objectStore("logs").put(l));
-            tx.objectStore("config").clear(); data.config.forEach(c => tx.objectStore("config").put(c));
-            tx.objectStore("members").clear(); data.members.forEach(m => tx.objectStore("members").put(m));
-            tx.oncomplete = () => { alert("復元完了"); location.reload(); };
-        };
-        reader.readAsText(ev.target.files[0]);
     }
 </script>
 </body>

@@ -18,20 +18,27 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro JP", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro JP", "Helvetica Neue", sans-serif;
             background-color: var(--apple-bg);
             color: var(--apple-text);
             padding-bottom: 80px;
             line-height: 1.47;
         }
 
-        /* 印刷設定: URLやヘッダーを消去 */
+        /* 印刷設定: URLやヘッダーを完全に排除 */
         @media print {
             @page { margin: 0; }
             nav, .no-print, .btn, #toast, .card { display: none !important; }
             body { background: #fff; padding: 0; }
             .preview-wrapper { display: block !important; background: none !important; padding: 0 !important; overflow: visible !important; }
-            .a4-page { width: 100% !important; transform: none !important; margin: 0 !important; box-shadow: none !important; padding: 10mm !important; }
+            .a4-page { 
+                width: 100% !important; 
+                transform: none !important; 
+                margin: 0 !important; 
+                box-shadow: none !important; 
+                padding: 10mm !important; 
+                border: none !important;
+            }
         }
 
         nav {
@@ -65,17 +72,35 @@
         .btn-secondary { background: #e8e8ed; color: var(--apple-text); }
         .btn-danger { background: var(--apple-red); color: white; padding: 8px; font-size: 12px; border-radius: 8px; width: auto; }
 
-        /* A4 Preview */
-        .preview-wrapper { width: 100%; overflow-x: hidden; background: #e8e8ed; border-radius: var(--apple-radius); padding: 10px 0; display: flex; justify-content: center; }
-        .a4-page { width: 210mm; min-height: 297mm; padding: 12mm; background: white; flex-shrink: 0; transform-origin: top center; box-shadow: 0 4px 12px rgba(0,0,0,0.1); color: #000; }
+        /* A4 プレビュー表示の最適化 */
+        .preview-wrapper { 
+            width: 100%; 
+            overflow-x: auto; 
+            background: #525659; /* PDFビューアーのような背景色 */
+            padding: 40px 10px; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start;
+        }
+        .a4-page { 
+            width: 210mm; 
+            min-height: 297mm; 
+            padding: 15mm; 
+            background: white; 
+            flex-shrink: 0; 
+            transform-origin: top center; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+            color: #000;
+            position: relative;
+        }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
-        th, td { border: 1px solid #000; padding: 6px; font-size: 11px; text-align: left; word-wrap: break-word; }
-        th { background: #f2f2f2; text-align: center; }
+        th, td { border: 1px solid #000; padding: 8px 6px; font-size: 12px; text-align: left; word-wrap: break-word; }
+        th { background: #f2f2f2; text-align: center; font-weight: bold; }
 
-        .invoice-title { font-size: 24px; text-align: center; border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 20px; font-weight: bold; letter-spacing: 15px; }
-        .total-box { font-size: 18px; font-weight: bold; border-bottom: 4px double #000; padding: 8px 0; margin: 15px 0; display: flex; justify-content: space-between; }
-        .bank-info { border: 1px solid #000; padding: 8px; margin-top: 10px; font-size: 11px; white-space: pre-wrap; width: fit-content; min-width: 250px; line-height: 1.4; }
+        .invoice-title { font-size: 28px; text-align: center; border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 30px; font-weight: bold; letter-spacing: 20px; text-indent: 20px; }
+        .total-box { font-size: 20px; font-weight: bold; border-bottom: 4px double #000; padding: 10px 0; margin: 20px 0; display: flex; justify-content: space-between; }
+        .bank-info { border: 1px solid #000; padding: 10px; margin-top: 20px; font-size: 12px; white-space: pre-wrap; width: fit-content; min-width: 300px; line-height: 1.6; }
 
         #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; border-radius: 30px; opacity: 0; transition: 0.3s; z-index: 3000; pointer-events: none; }
         .hidden { display: none; }
@@ -121,7 +146,7 @@
         <div class="card no-print"><label>表示月</label><input type="month" id="att-month" onchange="renderAttendance()"></div>
         <div class="preview-wrapper">
             <div class="a4-page" id="att-page">
-                <h2 id="att-title" style="margin-top:0;"></h2>
+                <h2 id="att-title" style="margin-top:0; border-bottom: 2px solid #000; padding-bottom: 5px;"></h2>
                 <table>
                     <thead><tr><th style="width:12%">日付</th><th style="width:25%">現場名</th><th style="width:25%">人員</th><th style="width:12%">区分</th><th>メモ</th><th class="no-print" style="width:15%">操作</th></tr></thead>
                     <tbody id="att-body"></tbody>
@@ -136,27 +161,27 @@
         <div class="preview-wrapper">
             <div class="a4-page" id="inv-page">
                 <div class="invoice-title">請求書</div>
-                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom: 10px;">
                     <div>
-                        <div id="disp-c-addr"></div>
-                        <div id="disp-c-name" style="font-size:16px; border-bottom:1px solid #000; min-width:200px; padding:5px 0; font-weight:bold; margin-bottom:5px;"></div>
+                        <div id="disp-c-addr" style="margin-bottom: 5px;"></div>
+                        <div id="disp-c-name" style="font-size:18px; border-bottom:1px solid #000; min-width:250px; padding:5px 0; font-weight:bold; margin-bottom:10px;"></div>
                         <div>下記の通り、ご請求申し上げます。</div>
                     </div>
                     <div style="text-align:right">
                         <div id="disp-date"></div>
-                        <div id="disp-m-name" style="font-weight:bold; font-size:14px; margin-top:5px;"></div>
-                        <div id="disp-m-addr" style="font-size:10px"></div>
-                        <div id="disp-m-tel" style="font-size:10px"></div>
+                        <div id="disp-m-name" style="font-weight:bold; font-size:16px; margin-top:10px;"></div>
+                        <div id="disp-m-addr" style="font-size:11px; margin-top:5px;"></div>
+                        <div id="disp-m-tel" style="font-size:11px"></div>
                     </div>
                 </div>
-                <div class="total-box"><span>ご請求金額</span><span id="disp-total"></span></div>
+                <div class="total-box"><span>ご請求金額 (税込)</span><span id="disp-total"></span></div>
                 <table>
-                    <thead><tr><th style="width:16%">日付</th><th>現場名・摘要</th><th style="width:16%">備考</th><th style="width:20%">金額</th></tr></thead>
+                    <thead><tr><th style="width:15%">日付</th><th>現場名・摘要</th><th style="width:15%">備考</th><th style="width:22%">金額 (税抜)</th></tr></thead>
                     <tbody id="inv-body"></tbody>
                     <tfoot>
-                        <tr><td colspan="3" style="text-align:right; font-weight:bold;">小計</td><td id="inv-subtotal" style="text-align:right"></td></tr>
-                        <tr><td colspan="3" style="text-align:right; font-weight:bold;">消費税 (10%)</td><td id="inv-tax" style="text-align:right"></td></tr>
-                        <tr><td colspan="3" style="text-align:right; font-weight:bold; background:#f2f2f2;">合計</td><td id="inv-grand-total" style="text-align:right; font-weight:bold; background:#f2f2f2;"></td></tr>
+                        <tr><td colspan="3" style="text-align:right; font-weight:bold; padding-right:15px;">小計 (税抜)</td><td id="inv-subtotal" style="text-align:right; font-weight:bold;"></td></tr>
+                        <tr><td colspan="3" style="text-align:right; font-weight:bold; padding-right:15px;">消費税 (10%)</td><td id="inv-tax" style="text-align:right; font-weight:bold;"></td></tr>
+                        <tr><td colspan="3" style="text-align:right; font-weight:bold; background:#f2f2f2; padding-right:15px;">合計 (税込)</td><td id="inv-grand-total" style="text-align:right; font-weight:bold; background:#f2f2f2;"></td></tr>
                     </tfoot>
                 </table>
                 <div class="bank-info" id="disp-bank"></div>
@@ -173,8 +198,8 @@
         </div>
         <div class="card">
             <h3>金額・手当設定</h3>
-            <div class="form-group"><label>標準日当</label><input type="number" id="set-base-wage" onchange="saveConfig()"></div>
-            <div class="form-group"><label>出張手当</label><input type="number" id="set-trip-pay" onchange="saveConfig()"></div>
+            <div class="form-group"><label>標準日当 (税込)</label><input type="number" id="set-base-wage" onchange="saveConfig()"></div>
+            <div class="form-group"><label>出張手当 (税込)</label><input type="number" id="set-trip-pay" onchange="saveConfig()"></div>
         </div>
         <div class="card">
             <h3>請求情報設定</h3>
@@ -199,7 +224,7 @@
 
 <script>
     let db;
-    const request = indexedDB.open("FieldManagerA4_v20", 1);
+    const request = indexedDB.open("FieldManagerA4_v21", 1);
 
     request.onupgradeneeded = (e) => {
         db = e.target.result;
@@ -225,12 +250,20 @@
 
     function adjustA4Scale() {
         const wrapper = document.querySelector('.preview-wrapper');
-        if(!wrapper) return;
-        const containerWidth = wrapper.offsetWidth - 20;
-        const scale = containerWidth / (210 * 3.78); 
+        if(!wrapper || wrapper.offsetParent === null) return;
+        
+        const containerWidth = wrapper.offsetWidth - 40;
+        const a4WidthInPx = 210 * 3.7795275591; // mm to px
+        const scale = containerWidth / a4WidthInPx;
+        
         document.querySelectorAll('.a4-page').forEach(page => {
-            page.style.transform = `scale(${scale})`;
-            page.parentElement.style.height = (page.offsetHeight * scale) + "px";
+            if (scale < 1) {
+                page.style.transform = `scale(${scale})`;
+                page.parentElement.style.height = (page.offsetHeight * scale) + "px";
+            } else {
+                page.style.transform = "none";
+                page.parentElement.style.height = "auto";
+            }
         });
     }
 
@@ -238,16 +271,17 @@
         document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
         document.getElementById('page-' + p).classList.remove('hidden');
         document.querySelectorAll('#main-nav button').forEach(b => b.classList.toggle('active', b.getAttribute('onclick').includes(p)));
+        
         if(p === 'attendance') renderAttendance();
         if(p === 'invoice') renderInvoice();
         if(p === 'settings') renderSettingsMembers();
-        setTimeout(adjustA4Scale, 100);
+        
+        setTimeout(adjustA4Scale, 150);
     }
 
     function getLastName(n) { return n ? n.trim().split(/[ 　]/)[0] : ""; }
     function toggleOvertime() { document.getElementById('overtime-wrap').style.display = (document.getElementById('work-type').value === '残業') ? 'block' : 'none'; }
 
-    // --- 保存 & コピーフロー (iPhone対応) ---
     async function confirmSave() {
         const site = document.getElementById('site-name').value;
         if(!site) return alert("現場名を入力してください");
@@ -256,7 +290,6 @@
             const data = await saveLog();
             const conf = await new Promise(r => db.transaction("config").objectStore("config").get("main").onsuccess = e => r(e.target.result?.value || {}));
             
-            // iPhone対策: alertの後にコピーを配置
             alert("登録が完了しました。続けてLINE用にコピーします。");
             copyToLine(data, conf.mName || "自分");
             
@@ -311,7 +344,9 @@
         document.execCommand('copy');
         document.body.removeChild(textArea);
 
-        if(navigator.clipboard) navigator.clipboard.writeText(msg);
+        if(navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(msg);
+        }
     }
 
     function renderAttendance() {
@@ -329,10 +364,10 @@
                         <td>${l.site}</td>
                         <td>${[myName, ...l.members.map(getLastName)].join(' ')} (${l.members.length + 1}名)</td>
                         <td style="text-align:center">${l.type === '残業' ? l.ot+'h' : l.type.substring(0,2)}</td>
-                        <td style="font-size:9px">${l.memo}</td>
+                        <td style="font-size:10px">${l.memo}</td>
                         <td class="no-print" style="text-align:center">
-                            <button onclick="editLog(${l.id})" style="color:blue; border:none; background:none; font-size:10px;">修正</button>
-                            <button onclick="deleteLog(${l.id})" style="color:red; border:none; background:none; font-size:10px;">削除</button>
+                            <button onclick="editLog(${l.id})" style="color:blue; border:none; background:none; font-size:11px; margin-right:5px;">修正</button>
+                            <button onclick="deleteLog(${l.id})" style="color:red; border:none; background:none; font-size:11px;">削除</button>
                         </td>
                     </tr>`).join('');
                 adjustA4Scale();
@@ -354,26 +389,38 @@
 
             db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (el) => {
                 const logs = el.target.result.filter(l => l.month === m).sort((a,b) => a.date.localeCompare(b.date));
-                let gTotal = 0;
+                let subTotalExTax = 0;
+                
                 document.getElementById('inv-body').innerHTML = logs.map(l => {
-                    gTotal += l.total;
+                    // 各行の金額（税込）から税抜きを算出
+                    const lineExTax = Math.floor(l.total / 1.1);
+                    subTotalExTax += lineExTax;
+                    
                     let biko = l.type + (l.ot > 0 ? `(${l.ot}h)` : "");
                     if(l.tripAmount > 0) biko += " +出張";
                     if(l.exp > 0) biko += " +経費";
-                    return `<tr><td>${l.date.replace(/-/g,'/')}</td><td>${l.site}</td><td>${biko}</td><td style="text-align:right">¥${l.total.toLocaleString()}</td></tr>`;
+                    
+                    return `<tr>
+                        <td style="text-align:center">${l.date.replace(/-/g,'/')}</td>
+                        <td>${l.site}</td>
+                        <td style="text-align:center">${biko}</td>
+                        <td style="text-align:right">¥${lineExTax.toLocaleString()}</td>
+                    </tr>`;
                 }).join('');
 
-                const tax = Math.floor(gTotal * 0.1);
-                document.getElementById('disp-total').innerText = "¥ " + (gTotal + tax).toLocaleString() + " -";
-                document.getElementById('inv-subtotal').innerText = "¥" + gTotal.toLocaleString();
+                const tax = Math.floor(subTotalExTax * 0.1);
+                const grandTotal = subTotalExTax + tax;
+
+                document.getElementById('disp-total').innerText = "¥ " + grandTotal.toLocaleString() + " -";
+                document.getElementById('inv-subtotal').innerText = "¥" + subTotalExTax.toLocaleString();
                 document.getElementById('inv-tax').innerText = "¥" + tax.toLocaleString();
-                document.getElementById('inv-grand-total').innerText = "¥" + (gTotal + tax).toLocaleString();
+                document.getElementById('inv-grand-total').innerText = "¥" + grandTotal.toLocaleString();
+                
                 adjustA4Scale();
             };
         };
     }
 
-    // --- 修正・削除 ---
     function editLog(id) {
         db.transaction("logs", "readonly").objectStore("logs").get(id).onsuccess = (e) => {
             const l = e.target.result;
@@ -402,7 +449,6 @@
         }
     }
 
-    // --- バックアップ機能 ---
     async function exportData() {
         const data = {
             logs: await new Promise(r => db.transaction("logs").objectStore("logs").getAll().onsuccess = e => r(e.target.result)),
@@ -421,28 +467,31 @@
         if(!file) return;
         const reader = new FileReader();
         reader.onload = async (e) => {
-            const data = JSON.parse(e.target.result);
-            if(confirm("現在のデータが上書きされます。復元しますか？")) {
-                const txL = db.transaction("logs", "readwrite");
-                await txL.objectStore("logs").clear();
-                data.logs.forEach(l => txL.objectStore("logs").put(l));
+            try {
+                const data = JSON.parse(e.target.result);
+                if(confirm("現在のデータが上書きされます。復元しますか？")) {
+                    const txL = db.transaction("logs", "readwrite");
+                    await txL.objectStore("logs").clear();
+                    data.logs.forEach(l => txL.objectStore("logs").put(l));
 
-                const txC = db.transaction("config", "readwrite");
-                await txC.objectStore("config").clear();
-                data.config.forEach(c => txC.objectStore("config").put(c));
+                    const txC = db.transaction("config", "readwrite");
+                    await txC.objectStore("config").clear();
+                    data.config.forEach(c => txC.objectStore("config").put(c));
 
-                const txM = db.transaction("members", "readwrite");
-                await txM.objectStore("members").clear();
-                data.members.forEach(m => txM.objectStore("members").put(m));
+                    const txM = db.transaction("members", "readwrite");
+                    await txM.objectStore("members").clear();
+                    data.members.forEach(m => txM.objectStore("members").put(m));
 
-                alert("復元が完了しました。再読み込みします。");
-                location.reload();
+                    alert("復元が完了しました。再読み込みします。");
+                    location.reload();
+                }
+            } catch (err) {
+                alert("ファイルの読み込みに失敗しました。正しい形式のファイルを選択してください。");
             }
         };
         reader.readAsText(file);
     }
 
-    // --- その他設定系 ---
     function addMember() {
         const name = document.getElementById('new-member').value.trim();
         if(!name) return;

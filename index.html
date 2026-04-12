@@ -80,7 +80,7 @@
         .btn-primary { background: var(--apple-blue); color: white; }
         .btn-secondary { background: #e8e8ed; color: var(--apple-text); }
 
-        /* 出勤簿内の「修正・削除」専用ボタン（押しやすさ重視） */
+        /* 出勤簿内の「修正・削除」専用ボタン */
         .action-btn {
             display: inline-block; padding: 8px 12px; border-radius: 8px;
             font-size: 12px; font-weight: 700; text-decoration: none; border: none;
@@ -105,16 +105,17 @@
         th, td { border: 1px solid #000; padding: 8px 4px; font-size: 10px; text-align: left; word-wrap: break-word; overflow: hidden; }
         th { background: #f2f2f2; font-weight: bold; }
 
-        .invoice-title { font-size: 26px; text-align: center; border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 25px; font-weight: bold; letter-spacing: 15px; }
-        .total-box { font-size: 20px; font-weight: bold; border-bottom: 5px double #000; padding: 8px 0; margin: 20px 0; display: flex; justify-content: space-between; }
-        .bank-info { border: 1px solid #000; padding: 10px; margin-top: 15px; font-size: 11px; white-space: pre-wrap; width: 100%; }
-
         #toast { 
             position: fixed; top: 80px; left: 50%; transform: translateX(-50%); 
             background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; 
             border-radius: 25px; opacity: 0; transition: 0.3s; z-index: 3000; font-size: 14px; pointer-events: none;
         }
         .hidden { display: none; }
+
+        /* LINEコピー用の隠しエリア */
+        #clipboard-box {
+            position: fixed; top: -9999px; left: -9999px; opacity: 0;
+        }
 
         @media print {
             nav, .no-print, .btn, #toast, .card { display: none !important; }
@@ -125,6 +126,8 @@
     </style>
 </head>
 <body>
+
+<textarea id="clipboard-box" readonly></textarea>
 
 <nav id="main-nav">
     <button onclick="showPage('entry')" class="active">日報入力</button>
@@ -196,31 +199,32 @@
         </div>
         <div class="preview-wrapper">
             <div class="a4-page" id="inv-page">
-                <div class="invoice-title">請求書</div>
-                <div style="display:flex; justify-content:space-between; font-size:12px;">
+                <h2 style="text-align:center; letter-spacing:10px; margin-bottom:20px;">請求書</h2>
+                <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:10px;">
                     <div>
                         <div id="disp-c-addr"></div>
-                        <div id="disp-c-name" style="font-size:16px; border-bottom:1px solid #000; min-width:200px; padding:5px 0; font-weight:bold; margin-bottom:5px;"></div>
-                        <div>下記の通り、ご請求申し上げます。</div>
+                        <div id="disp-c-name" style="font-size:16px; border-bottom:1px solid #000; min-width:200px; padding:5px 0; font-weight:bold;"></div>
                     </div>
                     <div style="text-align:right">
                         <div id="disp-date"></div>
-                        <div id="disp-m-name" style="font-weight:bold; font-size:14px; margin-top:5px;"></div>
+                        <div id="disp-m-name" style="font-weight:bold; font-size:14px;"></div>
                         <div id="disp-m-addr" style="font-size:10px"></div>
                         <div id="disp-m-tel" style="font-size:10px"></div>
                     </div>
                 </div>
-                <div class="total-box"><span>ご請求金額</span><span id="disp-total"></span></div>
+                <div style="font-size:18px; border-bottom:3px double #000; padding:10px 0; margin-bottom:15px; display:flex; justify-content:space-between;">
+                    <span>ご請求金額</span><span id="disp-total"></span>
+                </div>
                 <table>
-                    <thead><tr><th style="width:18%">日付</th><th>現場名・摘要</th><th style="width:20%">備考</th><th style="width:22%">単価 (税抜)</th></tr></thead>
+                    <thead><tr><th style="width:18%">日付</th><th>摘要</th><th style="width:20%">区分</th><th style="width:22%">単価(税抜)</th></tr></thead>
                     <tbody id="inv-body"></tbody>
                     <tfoot>
-                        <tr><td colspan="3" style="text-align:right; font-weight:bold;">小計 (税抜)</td><td id="inv-subtotal" style="text-align:right"></td></tr>
-                        <tr><td colspan="3" style="text-align:right; font-weight:bold;">消費税 (10%)</td><td id="inv-tax" style="text-align:right"></td></tr>
-                        <tr><td colspan="3" style="text-align:right; font-weight:bold; background:#f2f2f2;">合計 (税込)</td><td id="inv-grand-total" style="text-align:right; font-weight:bold; background:#f2f2f2;"></td></tr>
+                        <tr><td colspan="3" style="text-align:right">小計</td><td id="inv-subtotal" style="text-align:right"></td></tr>
+                        <tr><td colspan="3" style="text-align:right">消費税</td><td id="inv-tax" style="text-align:right"></td></tr>
+                        <tr><td colspan="3" style="text-align:right; font-weight:bold;">合計</td><td id="inv-grand-total" style="text-align:right; font-weight:bold;"></td></tr>
                     </tfoot>
                 </table>
-                <div class="bank-info" id="disp-bank"></div>
+                <div id="disp-bank" style="margin-top:15px; font-size:11px; border:1px solid #000; padding:10px; white-space:pre-wrap;"></div>
             </div>
         </div>
         <button class="btn btn-secondary no-print" onclick="window.print()">印刷 / PDF保存</button>
@@ -239,17 +243,13 @@
         </div>
         <div class="card">
             <h3>請求情報</h3>
-            <div class="form-group"><label>請求先 会社名</label><input type="text" id="set-c-name" onchange="saveConfig()"></div>
-            <div class="form-group"><label>請求先 住所</label><input type="text" id="set-c-addr" onchange="saveConfig()"></div>
-            <div class="form-group"><label>請求元 氏名</label><input type="text" id="set-m-name" onchange="saveConfig()"></div>
-            <div class="form-group"><label>請求元 住所</label><input type="text" id="set-m-addr" onchange="saveConfig()"></div>
-            <div class="form-group"><label>電話番号</label><input type="text" id="set-m-tel" onchange="saveConfig()"></div>
-            <div class="form-group"><label>振込先情報</label><textarea id="set-bank" rows="3" onchange="saveConfig()"></textarea></div>
+            <div class="form-group"><label>会社名</label><input type="text" id="set-c-name" onchange="saveConfig()"></div>
+            <div class="form-group"><label>請求元氏名</label><input type="text" id="set-m-name" onchange="saveConfig()"></div>
+            <div class="form-group"><label>振込先</label><textarea id="set-bank" rows="3" onchange="saveConfig()"></textarea></div>
         </div>
         <div class="card">
-            <h3>データ管理</h3>
-            <button class="btn btn-primary" onclick="exportData()">データを書き出す (保存)</button>
-            <button class="btn btn-secondary" onclick="importData()">データを読み込む (復元)</button>
+            <button class="btn btn-primary" onclick="exportData()">バックアップ保存</button>
+            <button class="btn btn-secondary" onclick="importData()">バックアップ復元</button>
         </div>
     </section>
 </div>
@@ -258,7 +258,7 @@
 
 <script>
     let db;
-    const request = indexedDB.open("FieldManagerA4_v14", 1);
+    const request = indexedDB.open("FieldManagerA4_v15", 1);
 
     request.onupgradeneeded = (e) => {
         db = e.target.result;
@@ -310,30 +310,33 @@
     function getLastName(n) { return n ? n.trim().split(/[ 　]/)[0] : ""; }
     function toggleOvertime() { document.getElementById('overtime-wrap').style.display = (document.getElementById('work-type').value === '残業') ? 'block' : 'none'; }
 
+    // iPhoneのための確実なコピーフロー
     async function handleSaveAction() {
         if(!document.getElementById('site-name').value) return alert("現場名を入力してください");
         
+        // 1. まずコピー内容を組み立てて隠しテキストエリアにセット
+        const site = document.getElementById('site-name').value;
+        const date = document.getElementById('date').value;
+        const type = document.getElementById('work-type').value;
+        const ot = document.getElementById('overtime-hours').value;
+        const members = Array.from(document.querySelectorAll('#member-selector .member-chip.selected')).map(el => el.innerText);
+        const conf = await new Promise(r => db.transaction("config").objectStore("config").get("main").onsuccess = e => r(e.target.result?.value || {}));
+        const myName = conf.mName || "自分";
+
+        const dt = new Date(date);
+        const msg = `${dt.getMonth()+1}/${dt.getDate()} ${site} ${[getLastName(myName), ...members.map(getLastName)].join(' ')} ${members.length + 1}名 ${type === '残業' ? '残業'+ot+'h' : type}です。`;
+        
+        const cb = document.getElementById('clipboard-box');
+        cb.value = msg;
+
+        // 2. ここで確認ダイアログを出す
         if(confirm("登録してLINE報告文をコピーしますか？")) {
-            const site = document.getElementById('site-name').value;
-            const date = document.getElementById('date').value;
-            const type = document.getElementById('work-type').value;
-            const ot = document.getElementById('overtime-hours').value;
-            const members = Array.from(document.querySelectorAll('#member-selector .member-chip.selected')).map(el => el.innerText);
+            // 3. OKが押されたら即座にコピーを実行
+            cb.select();
+            cb.setSelectionRange(0, 99999); // iOSのための選択範囲
+            const success = document.execCommand("copy");
             
-            const conf = await new Promise(r => db.transaction("config").objectStore("config").get("main").onsuccess = e => r(e.target.result?.value || {}));
-            const myName = conf.mName || "自分";
-
-            const dt = new Date(date);
-            const msg = `${dt.getMonth()+1}/${dt.getDate()} ${site} ${[getLastName(myName), ...members.map(getLastName)].join(' ')} ${members.length + 1}名 ${type === '残業' ? '残業'+ot+'h' : type}です。`;
-            
-            const area = document.createElement("textarea");
-            area.value = msg; 
-            area.style.position = "fixed"; area.style.left = "-9999px";
-            document.body.appendChild(area);
-            area.select(); 
-            document.execCommand("copy");
-            document.body.removeChild(area);
-
+            // 4. 保存処理へ
             saveLog(conf);
         }
     }
@@ -360,7 +363,7 @@
 
         db.transaction("logs", "readwrite").objectStore("logs").put(data).onsuccess = () => {
             clearEntryForm();
-            showToast("保存完了 ＆ LINEコピーしました");
+            showToast("保存 & LINEコピー完了");
             updateSiteDatalist();
         };
     }
@@ -438,7 +441,7 @@
         };
     }
 
-    function deleteLog(id) { if(confirm("本当にこの記録を削除しますか？")) db.transaction("logs", "readwrite").objectStore("logs").delete(id).onsuccess = renderAttendance; }
+    function deleteLog(id) { if(confirm("本当に削除しますか？")) db.transaction("logs", "readwrite").objectStore("logs").delete(id).onsuccess = renderAttendance; }
     function addMember() {
         const name = document.getElementById('new-member').value.trim();
         if(!name) return;
@@ -459,14 +462,13 @@
                 </div>`).join('');
         };
     }
-    function deleteMember(name) { if(confirm(name + " を名簿から削除しますか？")) db.transaction("members", "readwrite").objectStore("members").delete(name).onsuccess = () => { renderSettingsMembers(); renderMemberSelector(); }; }
+    function deleteMember(name) { if(confirm(name + " を削除しますか？")) db.transaction("members", "readwrite").objectStore("members").delete(name).onsuccess = () => { renderSettingsMembers(); renderMemberSelector(); }; }
 
     function saveConfig() {
         const conf = {
             baseWage: document.getElementById('set-base-wage').value, tripPay: document.getElementById('set-trip-pay').value,
-            cName: document.getElementById('set-c-name').value, cAddr: document.getElementById('set-c-addr').value,
-            mName: document.getElementById('set-m-name').value, mAddr: document.getElementById('set-m-addr').value,
-            mTel: document.getElementById('set-m-tel').value, bank: document.getElementById('set-bank').value
+            cName: document.getElementById('set-c-name').value, mName: document.getElementById('set-m-name').value,
+            bank: document.getElementById('set-bank').value
         };
         db.transaction("config", "readwrite").objectStore("config").put({ key: "main", value: conf });
     }
@@ -479,10 +481,7 @@
                     document.getElementById('set-trip-pay').value = v.tripPay || 1000;
                     document.getElementById('base-wage').value = v.baseWage || 18000;
                     document.getElementById('set-c-name').value = v.cName || "";
-                    document.getElementById('set-c-addr').value = v.cAddr || "";
                     document.getElementById('set-m-name').value = v.mName || "";
-                    document.getElementById('set-m-addr').value = v.mAddr || "";
-                    document.getElementById('set-m-tel').value = v.mTel || "";
                     document.getElementById('set-bank').value = v.bank || "";
                 }
                 r();
@@ -505,7 +504,7 @@
                 data[s] = e.target.result; count++;
                 if(count === stores.length) {
                     const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
-                    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `GenbaData.json`; a.click();
+                    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `Backup.json`; a.click();
                 }
             };
         });
@@ -520,7 +519,7 @@
                     const tx = db.transaction(s, "readwrite");
                     d[s].forEach(item => tx.objectStore(s).put(item));
                 });
-                alert("復元完了しました"); location.reload();
+                alert("復元完了"); location.reload();
             };
             reader.readAsText(e.target.files[0]);
         };

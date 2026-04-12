@@ -17,110 +17,105 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro JP", "Hiragino Kaku Gothic ProN", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro JP", sans-serif;
             background-color: var(--apple-bg);
             color: var(--apple-text);
-            padding-bottom: 100px;
+            padding-bottom: 80px;
             overflow-x: hidden;
-            line-height: 1.4;
+            line-height: 1.47;
         }
 
-        /* 固定ナビ */
+        /* ナビゲーション - iPhoneでの誤操作を防ぐ高さ */
         nav {
             position: sticky; top: 0;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             display: flex; justify-content: space-around;
-            padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.1); z-index: 2000;
+            padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.1); z-index: 2000;
         }
         nav button {
             background: none; border: none; font-size: 13px; font-weight: 500;
-            color: var(--apple-sub); cursor: pointer; flex: 1; padding: 5px 0;
+            color: var(--apple-sub); flex: 1; padding: 5px 0;
         }
         nav button.active { color: var(--apple-text); font-weight: 700; border-bottom: 2px solid var(--apple-text); }
 
         .container { max-width: 800px; margin: 0 auto; padding: 12px; }
         
         .card {
-            background: var(--apple-card); padding: 18px;
+            background: var(--apple-card); padding: 20px;
             border-radius: var(--apple-radius); margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
         h2 { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 15px; }
-        h3 { font-size: 16px; margin-bottom: 12px; border-left: 4px solid var(--apple-blue); padding-left: 8px; }
 
-        /* フォーム部品 */
-        .form-group { margin-bottom: 12px; }
-        label { display: block; font-size: 13px; font-weight: 600; color: var(--apple-sub); margin-bottom: 4px; }
+        /* フォーム入力 */
+        .form-group { margin-bottom: 14px; }
+        label { display: block; font-size: 13px; font-weight: 600; color: var(--apple-sub); margin-bottom: 5px; }
         input, select, textarea {
             width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #d2d2d7;
-            font-size: 16px; background: #fff; appearance: none; -webkit-appearance: none;
+            font-size: 16px; background: #fff; appearance: none;
         }
         
-        /* 出張手当チェックボックスの反応を改善 */
+        /* 出張手当チェックボックス - 押しやすさを極限まで改善 */
         .checkbox-container {
-            display: flex; align-items: center; gap: 10px; padding: 12px;
-            background: #fafafa; border-radius: 10px; border: 1px solid #d2d2d7; cursor: pointer;
+            display: flex; align-items: center; gap: 12px; padding: 15px;
+            background: #fff; border: 1px solid #d2d2d7; border-radius: 10px; cursor: pointer;
         }
         .checkbox-container input[type="checkbox"] {
-            width: 24px; height: 24px; appearance: checkbox; -webkit-appearance: checkbox; flex-shrink: 0;
+            width: 24px; height: 24px; appearance: checkbox; flex-shrink: 0;
         }
 
-        .member-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 5px; }
+        .member-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
         .member-chip {
-            padding: 8px 12px; border-radius: 18px; background: #f0f0f2;
-            font-size: 13px; cursor: pointer; transition: 0.2s;
+            padding: 8px 14px; border-radius: 20px; background: #f0f0f2;
+            font-size: 14px; cursor: pointer;
         }
         .member-chip.selected { background: var(--apple-blue); color: #fff; font-weight: 600; }
 
         .btn {
-            display: block; width: 100%; padding: 15px; border-radius: var(--apple-radius);
-            font-size: 16px; font-weight: 600; text-align: center; border: none; cursor: pointer; margin-bottom: 8px;
+            display: block; width: 100%; padding: 16px; border-radius: var(--apple-radius);
+            font-size: 16px; font-weight: 600; text-align: center; border: none; cursor: pointer; margin-bottom: 10px;
         }
         .btn-primary { background: var(--apple-blue); color: white; }
         .btn-secondary { background: #e8e8ed; color: var(--apple-text); }
-        .btn-danger { background: #ff3b30; color: white; padding: 4px 8px; font-size: 11px; border-radius: 6px; width: auto; }
+        .btn-danger { background: #ff3b30; color: white; padding: 5px 10px; font-size: 11px; border-radius: 6px; width: auto; }
 
-        /* iPhone用プレビュー調整 */
-        .preview-outer {
+        /* --- 表示崩れ対策：A4プレビューコンテナ --- */
+        .preview-wrapper {
             width: 100%; overflow: hidden; background: #e8e8ed;
-            border-radius: var(--apple-radius); padding: 5px; margin-bottom: 10px;
-            display: flex; justify-content: center;
+            border-radius: var(--apple-radius); padding: 10px 0;
+            display: flex; justify-content: center; position: relative;
         }
+        /* A4本体：サイズは固定し、JSでscale(縮尺)を制御する */
         .a4-page {
             width: 210mm; min-height: 297mm; padding: 15mm; background: white;
             color: #000; flex-shrink: 0; transform-origin: top center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        /* スマホ画面でA4を縮小表示 */
-        @media screen and (max-width: 850px) {
-            .a4-page {
-                transform: scale(calc((100vw - 34px) / 210));
-                margin-bottom: calc(-297mm * (1 - ((100vw - 34px) / 210)));
-            }
-        }
-
+        /* テーブル文字重なり対策 */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
-        th, td { border: 1px solid #000; padding: 6px; font-size: 10px; text-align: left; word-wrap: break-word; }
-        th { background: #f2f2f2; }
+        th, td { border: 1px solid #000; padding: 8px 4px; font-size: 10px; text-align: left; word-wrap: break-word; overflow: hidden; }
+        th { background: #f2f2f2; font-weight: bold; }
 
-        .invoice-title { font-size: 24px; text-align: center; border-bottom: 2px solid #000; padding-bottom: 5px; margin-bottom: 20px; font-weight: bold; letter-spacing: 10px; }
-        .total-box { font-size: 18px; font-weight: bold; border-bottom: 4px double #000; padding: 5px 0; margin: 15px 0; display: flex; justify-content: space-between; }
-        .bank-info { border: 1px solid #000; padding: 8px; margin-top: 10px; font-size: 10px; white-space: pre-wrap; width: 100%; }
+        /* 請求書パーツ */
+        .invoice-title { font-size: 26px; text-align: center; border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 25px; font-weight: bold; letter-spacing: 15px; }
+        .total-box { font-size: 20px; font-weight: bold; border-bottom: 5px double #000; padding: 8px 0; margin: 20px 0; display: flex; justify-content: space-between; }
+        .bank-info { border: 1px solid #000; padding: 10px; margin-top: 15px; font-size: 11px; white-space: pre-wrap; width: 100%; }
 
         #toast { 
             position: fixed; top: 80px; left: 50%; transform: translateX(-50%); 
-            background: rgba(0,0,0,0.85); color: #fff; padding: 10px 20px; 
-            border-radius: 20px; opacity: 0; transition: 0.3s; z-index: 3000; font-size: 14px;
+            background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; 
+            border-radius: 25px; opacity: 0; transition: 0.3s; z-index: 3000; font-size: 14px;
         }
         .hidden { display: none; }
 
         @media print {
             nav, .no-print, .btn, #toast, .card { display: none !important; }
             body { background: #fff; padding: 0; }
-            .preview-outer { display: block; background: none; padding: 0; }
-            .a4-page { width: 100%; box-shadow: none; transform: none !important; margin: 0; padding: 10mm; }
+            .preview-wrapper { display: block; background: none; padding: 0; overflow: visible; }
+            .a4-page { width: 100%; transform: none !important; margin: 0; padding: 10mm; box-shadow: none; }
         }
     </style>
 </head>
@@ -169,11 +164,11 @@
         <div class="card no-print">
             <label>表示月</label><input type="month" id="att-month" onchange="renderAttendance()">
         </div>
-        <div class="preview-outer">
-            <div class="a4-page">
+        <div class="preview-wrapper">
+            <div class="a4-page" id="att-page">
                 <h2 id="att-title" style="margin-top:0;"></h2>
                 <table>
-                    <thead><tr><th style="width:12%">日付</th><th style="width:25%">現場名</th><th style="width:25%">人員</th><th style="width:13%">区分</th><th>メモ</th><th class="no-print" style="width:12%">操作</th></tr></thead>
+                    <thead><tr><th style="width:14%">日付</th><th style="width:26%">現場名</th><th style="width:24%">人員</th><th style="width:14%">区分</th><th>メモ</th><th class="no-print" style="width:12%">操作</th></tr></thead>
                     <tbody id="att-body"></tbody>
                 </table>
             </div>
@@ -185,25 +180,25 @@
         <div class="card no-print">
             <label>請求月</label><input type="month" id="inv-month" onchange="renderInvoice()">
         </div>
-        <div class="preview-outer">
-            <div class="a4-page">
+        <div class="preview-wrapper">
+            <div class="a4-page" id="inv-page">
                 <div class="invoice-title">請求書</div>
-                <div style="display:flex; justify-content:space-between; font-size:11px;">
+                <div style="display:flex; justify-content:space-between; font-size:12px;">
                     <div>
                         <div id="disp-c-addr"></div>
-                        <div id="disp-c-name" style="font-size:15px; border-bottom:1px solid #000; min-width:180px; padding:3px 0; font-weight:bold; margin-bottom:5px;"></div>
+                        <div id="disp-c-name" style="font-size:16px; border-bottom:1px solid #000; min-width:200px; padding:5px 0; font-weight:bold; margin-bottom:5px;"></div>
                         <div>下記の通り、ご請求申し上げます。</div>
                     </div>
                     <div style="text-align:right">
                         <div id="disp-date"></div>
-                        <div id="disp-m-name" style="font-weight:bold; font-size:13px; margin-top:3px;"></div>
-                        <div id="disp-m-addr" style="font-size:9px"></div>
-                        <div id="disp-m-tel" style="font-size:9px"></div>
+                        <div id="disp-m-name" style="font-weight:bold; font-size:14px; margin-top:5px;"></div>
+                        <div id="disp-m-addr" style="font-size:10px"></div>
+                        <div id="disp-m-tel" style="font-size:10px"></div>
                     </div>
                 </div>
                 <div class="total-box"><span>ご請求金額</span><span id="disp-total"></span></div>
                 <table>
-                    <thead><tr><th style="width:15%">日付</th><th>現場名・摘要</th><th style="width:20%">備考</th><th style="width:20%">単価 (税抜)</th></tr></thead>
+                    <thead><tr><th style="width:18%">日付</th><th>現場名・摘要</th><th style="width:20%">備考</th><th style="width:22%">単価 (税抜)</th></tr></thead>
                     <tbody id="inv-body"></tbody>
                     <tfoot>
                         <tr><td colspan="3" style="text-align:right; font-weight:bold;">小計 (税抜)</td><td id="inv-subtotal" style="text-align:right"></td></tr>
@@ -238,9 +233,9 @@
             <div class="form-group"><label>振込先情報</label><textarea id="set-bank" rows="3" onchange="saveConfig()"></textarea></div>
         </div>
         <div class="card">
-            <h3>バックアップ</h3>
-            <button class="btn btn-primary" onclick="exportData()">データを書き出す</button>
-            <button class="btn btn-secondary" onclick="importData()">データを読み込む</button>
+            <h3>データ管理</h3>
+            <button class="btn btn-primary" onclick="exportData()">データを書き出す (保存)</button>
+            <button class="btn btn-secondary" onclick="importData()">データを読み込む (復元)</button>
         </div>
     </section>
 </div>
@@ -249,7 +244,7 @@
 
 <script>
     let db;
-    const request = indexedDB.open("FieldProA4_v11", 1);
+    const request = indexedDB.open("FieldManagerA4_v12", 1);
 
     request.onupgradeneeded = (e) => {
         db = e.target.result;
@@ -270,6 +265,19 @@
         document.getElementById('inv-month').value = now.toISOString().substring(0, 7);
         renderMemberSelector();
         updateSiteDatalist();
+        window.addEventListener('resize', adjustA4Scale);
+    }
+
+    /* iPhone表示崩れ対策：画面幅に合わせてA4をスケールダウン */
+    function adjustA4Scale() {
+        const containerWidth = document.querySelector('.container').offsetWidth - 24;
+        const a4WidthInPx = 210 * 3.78; // 210mm to px approx
+        const scale = containerWidth / a4WidthInPx;
+        
+        document.querySelectorAll('.a4-page').forEach(page => {
+            page.style.transform = `scale(${scale})`;
+            page.parentElement.style.height = (page.offsetHeight * scale) + "px";
+        });
     }
 
     function showPage(p) {
@@ -279,18 +287,14 @@
             b.classList.remove('active');
             if(b.getAttribute('onclick').includes(p)) b.classList.add('active');
         });
-        if(p === 'attendance') renderAttendance();
-        if(p === 'invoice') renderInvoice();
+        if(p === 'attendance') { renderAttendance(); setTimeout(adjustA4Scale, 50); }
+        if(p === 'invoice') { renderInvoice(); setTimeout(adjustA4Scale, 50); }
         if(p === 'settings') renderSettingsMembers();
     }
 
     function getLastName(n) { return n ? n.trim().split(/[ 　]/)[0] : ""; }
-
-    function toggleOvertime() {
-        document.getElementById('overtime-wrap').style.display = (document.getElementById('work-type').value === '残業') ? 'block' : 'none';
-    }
-
-    function confirmSave() { if(confirm("登録しますか？")) saveLog(); }
+    function toggleOvertime() { document.getElementById('overtime-wrap').style.display = (document.getElementById('work-type').value === '残業') ? 'block' : 'none'; }
+    function confirmSave() { if(confirm("登録してLINEコピーしますか？")) saveLog(); }
 
     async function saveLog() {
         const id = document.getElementById('edit-id').value;
@@ -319,18 +323,14 @@
         db.transaction("logs", "readwrite").objectStore("logs").put(data).onsuccess = () => {
             copyToLine(data, conf.mName || "自分");
             clearEntryForm();
-            showToast("保存完了 ＆ コピーしました");
+            showToast("保存 ＆ コピー完了");
             updateSiteDatalist();
         };
     }
 
     function copyToLine(d, myName) {
         const dt = new Date(d.date);
-        const dateStr = `${dt.getMonth()+1}/${dt.getDate()}`;
-        const membersStr = [getLastName(myName), ...d.members.map(getLastName)].join(' ');
-        const count = d.members.length + 1;
-        const msg = `${dateStr} ${d.site} ${membersStr} ${count}名 ${d.type === '残業' ? '残業'+d.ot+'時間' : d.type}です。`;
-        
+        const msg = `${dt.getMonth()+1}/${dt.getDate()} ${d.site} ${[getLastName(myName), ...d.members.map(getLastName)].join(' ')} ${d.members.length + 1}名 ${d.type === '残業' ? '残業'+d.ot+'h' : d.type}です。`;
         const area = document.createElement("textarea");
         area.value = msg; document.body.appendChild(area);
         area.select(); document.execCommand("copy");
@@ -341,7 +341,6 @@
         const m = document.getElementById('att-month').value;
         const [y, mm] = m.split('-');
         document.getElementById('att-title').innerText = `${y}年${parseInt(mm)}月 出勤記録`;
-
         db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => {
             const logs = e.target.result.filter(l => l.month === m).sort((a,b) => a.date.localeCompare(b.date));
             db.transaction("config").objectStore("config").get("main").onsuccess = (ec) => {
@@ -352,12 +351,10 @@
                         <td>${l.site}</td>
                         <td>${[myName, ...l.members.map(getLastName)].join(' ')}</td>
                         <td>${l.type === '残業' ? l.ot+'h' : l.type}</td>
-                        <td>${l.memo}</td>
-                        <td class="no-print">
-                            <span onclick="editLog(${l.id})" style="color:var(--apple-blue); font-size:9px;">修正</span>
-                            <span onclick="deleteLog(${l.id})" style="color:#ff3b30; font-size:9px; margin-left:5px;">削除</span>
-                        </td>
+                        <td style="font-size:8px;">${l.memo}</td>
+                        <td class="no-print"><button onclick="editLog(${l.id})" style="color:var(--apple-blue); border:none; background:none; font-size:9px;">修</button><button onclick="deleteLog(${l.id})" style="color:#ff3b30; border:none; background:none; font-size:9px; margin-left:4px;">消</button></td>
                     </tr>`).join('');
+                adjustA4Scale();
             };
         };
     }
@@ -373,7 +370,6 @@
             document.getElementById('disp-m-tel').innerText = c.mTel || "";
             document.getElementById('disp-bank').innerText = "【お振込先】\n" + (c.bank || "");
             document.getElementById('disp-date').innerText = "発行日: " + new Date().toLocaleDateString();
-
             db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (el) => {
                 const logs = el.target.result.filter(l => l.month === m).sort((a,b) => a.date.localeCompare(b.date));
                 let subTotal = 0; let gTotal = 0;
@@ -386,6 +382,7 @@
                 document.getElementById('inv-subtotal').innerText = "¥" + subTotal.toLocaleString();
                 document.getElementById('inv-tax').innerText = "¥" + (gTotal - subTotal).toLocaleString();
                 document.getElementById('inv-grand-total').innerText = "¥" + gTotal.toLocaleString();
+                adjustA4Scale();
             };
         };
     }
@@ -405,61 +402,43 @@
             document.getElementById('memo').value = l.memo;
             document.getElementById('cancel-edit').style.display = "block";
             toggleOvertime();
-            document.querySelectorAll('#member-selector .member-chip').forEach(el => {
-                el.classList.toggle('selected', l.members.includes(el.innerText));
-            });
+            document.querySelectorAll('#member-selector .member-chip').forEach(el => el.classList.toggle('selected', l.members.includes(el.innerText)));
             window.scrollTo(0,0);
         };
     }
 
-    function deleteLog(id) {
-        if(confirm("削除しますか？")) {
-            db.transaction("logs", "readwrite").objectStore("logs").delete(id).onsuccess = renderAttendance;
-        }
-    }
-
+    function deleteLog(id) { if(confirm("削除しますか？")) db.transaction("logs", "readwrite").objectStore("logs").delete(id).onsuccess = renderAttendance; }
     function addMember() {
         const name = document.getElementById('new-member').value.trim();
         if(!name) return;
         db.transaction("members", "readwrite").objectStore("members").put({name}).onsuccess = () => {
-            document.getElementById('new-member').value = "";
-            renderSettingsMembers(); renderMemberSelector();
+            document.getElementById('new-member').value = ""; renderSettingsMembers(); renderMemberSelector();
         };
     }
-
     function renderMemberSelector() {
         db.transaction("members", "readonly").objectStore("members").getAll().onsuccess = (e) => {
             document.getElementById('member-selector').innerHTML = e.target.result.map(m => `<div class="member-chip" onclick="this.classList.toggle('selected')">${m.name}</div>`).join('');
         };
     }
-
     function renderSettingsMembers() {
         db.transaction("members", "readonly").objectStore("members").getAll().onsuccess = (e) => {
             document.getElementById('settings-member-list').innerHTML = e.target.result.map(m => `
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px; background:#f5f5f7; padding:10px; border-radius:10px;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; background:#f5f5f7; padding:12px; border-radius:10px; align-items:center;">
                     <span>${m.name}</span><button class="btn-danger" onclick="deleteMember('${m.name}')">削除</button>
                 </div>`).join('');
         };
     }
-
-    function deleteMember(name) {
-        db.transaction("members", "readwrite").objectStore("members").delete(name).onsuccess = () => { renderSettingsMembers(); renderMemberSelector(); };
-    }
+    function deleteMember(name) { db.transaction("members", "readwrite").objectStore("members").delete(name).onsuccess = () => { renderSettingsMembers(); renderMemberSelector(); }; }
 
     function saveConfig() {
         const conf = {
-            baseWage: document.getElementById('set-base-wage').value,
-            tripPay: document.getElementById('set-trip-pay').value,
-            cName: document.getElementById('set-c-name').value,
-            cAddr: document.getElementById('set-c-addr').value,
-            mName: document.getElementById('set-m-name').value,
-            mAddr: document.getElementById('set-m-addr').value,
-            mTel: document.getElementById('set-m-tel').value,
-            bank: document.getElementById('set-bank').value
+            baseWage: document.getElementById('set-base-wage').value, tripPay: document.getElementById('set-trip-pay').value,
+            cName: document.getElementById('set-c-name').value, cAddr: document.getElementById('set-c-addr').value,
+            mName: document.getElementById('set-m-name').value, mAddr: document.getElementById('set-m-addr').value,
+            mTel: document.getElementById('set-m-tel').value, bank: document.getElementById('set-bank').value
         };
         db.transaction("config", "readwrite").objectStore("config").put({ key: "main", value: conf });
     }
-
     async function loadConfig() {
         return new Promise(r => {
             db.transaction("config", "readonly").objectStore("config").get("main").onsuccess = (e) => {
@@ -486,56 +465,41 @@
             document.getElementById('site-list').innerHTML = sites.map(s => `<option value="${s}">`).join('');
         };
     }
-
     function exportData() {
         const data = {};
         const stores = ["logs", "config", "members"];
         let count = 0;
         stores.forEach(s => {
             db.transaction(s, "readonly").objectStore(s).getAll().onsuccess = (e) => {
-                data[s] = e.target.result;
-                count++;
+                data[s] = e.target.result; count++;
                 if(count === stores.length) {
                     const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url; a.download = `GenbaPro_Backup.json`; a.click();
+                    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `GenbaData.json`; a.click();
                 }
             };
         });
     }
-
     function importData() {
-        const input = document.createElement("input");
-        input.type = "file";
+        const input = document.createElement("input"); input.type = "file";
         input.onchange = (e) => {
             const reader = new FileReader();
             reader.onload = (re) => {
-                const data = JSON.parse(re.target.result);
-                Object.keys(data).forEach(s => {
+                const d = JSON.parse(re.target.result);
+                Object.keys(d).forEach(s => {
                     const tx = db.transaction(s, "readwrite");
-                    data[s].forEach(item => tx.objectStore(s).put(item));
+                    d[s].forEach(item => tx.objectStore(s).put(item));
                 });
-                alert("復元完了。再読み込みします。"); location.reload();
+                alert("復元完了しました"); location.reload();
             };
             reader.readAsText(e.target.files[0]);
         };
         input.click();
     }
-
-    function showToast(m) {
-        const t = document.getElementById('toast');
-        t.innerText = m; t.style.opacity = 1;
-        setTimeout(() => t.style.opacity = 0, 2000);
-    }
-
+    function showToast(m) { const t = document.getElementById('toast'); t.innerText = m; t.style.opacity = 1; setTimeout(() => t.style.opacity = 0, 2000); }
     function clearEntryForm() {
-        document.getElementById('edit-id').value = "";
-        document.getElementById('site-name').value = "";
-        document.getElementById('memo').value = "";
-        document.getElementById('expenses').value = "0";
-        document.getElementById('is-trip').checked = false;
-        document.getElementById('cancel-edit').style.display = "none";
+        document.getElementById('edit-id').value = ""; document.getElementById('site-name').value = "";
+        document.getElementById('memo').value = ""; document.getElementById('expenses').value = "0";
+        document.getElementById('is-trip').checked = false; document.getElementById('cancel-edit').style.display = "none";
         document.querySelectorAll('#member-selector .member-chip').forEach(el => el.classList.remove('selected'));
         init();
     }

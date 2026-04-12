@@ -74,7 +74,7 @@
         .btn-secondary { background: #e8e8ed; color: var(--apple-text); }
         .btn-danger { background: var(--apple-red); color: white; padding: 8px; font-size: 12px; border-radius: 8px; width: auto; }
 
-        /* A4 プレビュー表示の最適化（スマホで全体が見えるように修正） */
+        /* A4 プレビュー表示の最適化（スマホ対策） */
         .preview-wrapper { 
             width: 100%; 
             background: #525659; 
@@ -82,7 +82,7 @@
             display: flex; 
             justify-content: center; 
             align-items: flex-start;
-            overflow: hidden; /* コンテナからはみ出さないように制御 */
+            overflow: hidden; 
             position: relative;
             border-radius: var(--apple-radius);
             min-height: 400px;
@@ -99,7 +99,6 @@
             position: absolute;
             top: 10px;
             left: 50%;
-            /* JavaScriptでスケールを調整するため、初期状態を設定 */
             transform: translateX(-50%) scale(0.4); 
         }
 
@@ -205,7 +204,7 @@
                             <th style="width:15%">日付</th>
                             <th>現場名・摘要</th>
                             <th style="width:15%">備考</th>
-                            <th style="width:22%">金額 (税抜)</th>
+                            <th style="width:22%">金額 (税込)</th>
                         </tr>
                     </thead>
                     <tbody id="inv-body"></tbody>
@@ -279,29 +278,19 @@
         document.getElementById('inv-month').value = now.toISOString().substring(0, 7);
         renderMemberSelector();
         updateSiteDatalist();
-        
-        // リサイズ時にスケールを再計算
         window.addEventListener('resize', adjustA4Scale);
     }
 
-    // A4プレビューを画面幅に合わせてスケーリングするロジック（スマホ対策）
     function adjustA4Scale() {
         const wrappers = document.querySelectorAll('.preview-wrapper');
         wrappers.forEach(wrapper => {
             if (wrapper.parentElement.classList.contains('hidden')) return;
-            
             const page = wrapper.querySelector('.a4-page');
             if (!page) return;
-
-            const containerWidth = wrapper.offsetWidth - 20; // 左右マージン
-            const a4WidthPx = 210 * 3.7795; // 210mm to px
-            
-            // 画面幅がA4サイズより小さい場合のみ縮小
+            const containerWidth = wrapper.offsetWidth - 20;
+            const a4WidthPx = 210 * 3.7795;
             const scale = Math.min(containerWidth / a4WidthPx, 1);
-            
             page.style.transform = `translateX(-50%) scale(${scale})`;
-            
-            // 縮小された分の高さをコンテナに反映
             const a4HeightPx = 297 * 3.7795;
             wrapper.style.height = (a4HeightPx * scale + 40) + "px";
         });
@@ -311,12 +300,9 @@
         document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
         document.getElementById('page-' + p).classList.remove('hidden');
         document.querySelectorAll('#main-nav button').forEach(b => b.classList.toggle('active', b.getAttribute('onclick').includes(p)));
-        
         if(p === 'attendance') renderAttendance();
         if(p === 'invoice') renderInvoice();
         if(p === 'settings') renderSettingsMembers();
-        
-        // 描画後にスケーリングを適用
         setTimeout(adjustA4Scale, 50);
     }
 
@@ -326,14 +312,11 @@
     async function confirmSave() {
         const site = document.getElementById('site-name').value;
         if(!site) return alert("現場名を入力してください");
-
         if(confirm("登録しますか？")) {
             const data = await saveLog();
             const conf = await new Promise(r => db.transaction("config").objectStore("config").get("main").onsuccess = e => r(e.target.result?.value || {}));
-            
             alert("登録が完了しました。LINE用にコピーします。");
             copyToLine(data, conf.mName || "自分");
-            
             clearEntryForm();
             showToast("登録とコピーが完了しました");
         }
@@ -359,7 +342,7 @@
             if(type === '残業') total += Math.floor((base / 8) * 1.25 * ot);
             total += exp + tripAmount;
 
-            const data = { date, site, type, ot, base, exp, tripAmount, members, total, memo, month: date.substring(0,7) };
+            const data = { date, site, type, ot, base, exp, tripAmount, members, total, month: date.substring(0,7), memo };
             if(id) data.id = parseInt(id);
 
             db.transaction("logs", "readwrite").objectStore("logs").put(data).onsuccess = () => {
@@ -377,24 +360,18 @@
         const msg = d.type === '残業' 
             ? `${dateStr} ${d.site} ${membersStr} ${count}名 残業${d.ot}時間です。`
             : `${dateStr} ${d.site} ${membersStr} ${count}名 定時終了です。`;
-        
         const textArea = document.createElement("textarea");
         textArea.value = msg;
         document.body.appendChild(textArea);
         textArea.select();
         document.execCommand('copy');
         document.body.removeChild(textArea);
-
-        if(navigator.clipboard && navigator.clipboard.writeText) {
-            navigator.clipboard.writeText(msg);
-        }
     }
 
     function renderAttendance() {
         const m = document.getElementById('att-month').value;
         const [y, mm] = m.split('-');
         document.getElementById('att-title').innerText = `${y}年${parseInt(mm)}月 出勤記録`;
-
         db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => {
             const logs = e.target.result.filter(l => l.month === m).sort((a,b) => a.date.localeCompare(b.date));
             db.transaction("config").objectStore("config").get("main").onsuccess = (ec) => {
@@ -405,7 +382,7 @@
                         <td>${l.site}</td>
                         <td>${[myName, ...l.members.map(getLastName)].join(' ')}<br>(${l.members.length + 1}名)</td>
                         <td style="text-align:center">${l.type === '残業' ? l.ot+'h' : l.type.substring(0,2)}</td>
-                        <td style="font-size:10px">${l.memo}</td>
+                        <td style="font-size:10px">${l.memo || ""}</td>
                         <td class="no-print" style="text-align:center">
                             <button onclick="editLog(${l.id})" style="color:blue; border:none; background:none; font-size:11px; margin-right:5px; padding:4px;">修正</button>
                             <button onclick="deleteLog(${l.id})" style="color:red; border:none; background:none; font-size:11px; padding:4px;">削除</button>
@@ -420,9 +397,9 @@
         const m = document.getElementById('inv-month').value;
         db.transaction("config", "readonly").objectStore("config").get("main").onsuccess = (ec) => {
             const c = ec.target.result?.value || {};
-            document.getElementById('disp-c-name').innerText = (c.cName || "（請求先）") + " 御中";
+            document.getElementById('disp-c-name').innerText = (c.cName || "") + " 御中";
             document.getElementById('disp-c-addr').innerText = c.cAddr || "";
-            document.getElementById('disp-m-name').innerText = c.mName || "（自分の名前）";
+            document.getElementById('disp-m-name').innerText = c.mName || "";
             document.getElementById('disp-m-addr').innerText = c.mAddr || "";
             document.getElementById('disp-m-tel').innerText = c.mTel || "";
             document.getElementById('disp-bank').innerText = "【お振込先】\n" + (c.bank || "");
@@ -430,12 +407,12 @@
 
             db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (el) => {
                 const logs = el.target.result.filter(l => l.month === m).sort((a,b) => a.date.localeCompare(b.date));
-                let subTotalExTax = 0;
+                
+                // 合計ロジックの修正: 税込で合計してから逆算する
+                let grandTotal = 0;
                 
                 document.getElementById('inv-body').innerHTML = logs.map(l => {
-                    const lineExTax = Math.floor(l.total / 1.1);
-                    subTotalExTax += lineExTax;
-                    
+                    grandTotal += l.total;
                     let biko = l.type + (l.ot > 0 ? `(${l.ot}h)` : "");
                     if(l.tripAmount > 0) biko += " +出張";
                     if(l.exp > 0) biko += " +経費";
@@ -444,12 +421,13 @@
                         <td style="text-align:center">${l.date.replace(/-/g,'/')}</td>
                         <td>${l.site}</td>
                         <td style="text-align:center">${biko}</td>
-                        <td style="text-align:right">¥${lineExTax.toLocaleString()}</td>
+                        <td style="text-align:right">¥${l.total.toLocaleString()}</td>
                     </tr>`;
                 }).join('');
 
-                const tax = Math.floor(subTotalExTax * 0.1);
-                const grandTotal = subTotalExTax + tax;
+                // 税込総額から税抜と税を計算
+                const subTotalExTax = Math.round(grandTotal / 1.1);
+                const tax = grandTotal - subTotalExTax;
 
                 document.getElementById('disp-total').innerText = "¥ " + grandTotal.toLocaleString() + " -";
                 document.getElementById('inv-subtotal').innerText = "¥" + subTotalExTax.toLocaleString();
@@ -473,7 +451,7 @@
             document.getElementById('base-wage').value = l.base;
             document.getElementById('expenses').value = l.exp;
             document.getElementById('is-trip').checked = l.tripAmount > 0;
-            document.getElementById('memo').value = l.memo;
+            document.getElementById('memo').value = l.memo || "";
             document.getElementById('cancel-edit').style.display = "block";
             toggleOvertime();
             document.querySelectorAll('#member-selector .member-chip').forEach(el => {
@@ -509,25 +487,19 @@
         reader.onload = async (e) => {
             try {
                 const data = JSON.parse(e.target.result);
-                if(confirm("現在のデータが全て上書きされます。復元しますか？")) {
+                if(confirm("復元しますか？")) {
                     const txL = db.transaction("logs", "readwrite");
                     await txL.objectStore("logs").clear();
                     data.logs.forEach(l => txL.objectStore("logs").put(l));
-
                     const txC = db.transaction("config", "readwrite");
                     await txC.objectStore("config").clear();
                     data.config.forEach(c => txC.objectStore("config").put(c));
-
                     const txM = db.transaction("members", "readwrite");
                     await txM.objectStore("members").clear();
                     data.members.forEach(m => txM.objectStore("members").put(m));
-
-                    alert("復元が完了しました。再読み込みします。");
-                    location.reload();
+                    alert("完了"); location.reload();
                 }
-            } catch (err) {
-                alert("ファイルの読み込みに失敗しました。正しい形式のファイルを選択してください。");
-            }
+            } catch (err) { alert("エラー"); }
         };
         reader.readAsText(file);
     }

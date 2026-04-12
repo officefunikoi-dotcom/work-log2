@@ -11,6 +11,7 @@
             --apple-text: #1d1d1f;
             --apple-sub: #86868b;
             --apple-blue: #0066cc;
+            --apple-red: #ff3b30;
             --apple-radius: 12px;
         }
 
@@ -25,10 +26,10 @@
             line-height: 1.47;
         }
 
-        /* ナビゲーション - iPhoneでの誤操作を防ぐ高さ */
+        /* ナビゲーション */
         nav {
             position: sticky; top: 0;
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.9);
             backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
             display: flex; justify-content: space-around;
             padding: 12px 0; border-bottom: 1px solid rgba(0,0,0,0.1); z-index: 2000;
@@ -57,7 +58,6 @@
             font-size: 16px; background: #fff; appearance: none;
         }
         
-        /* 出張手当チェックボックス - 押しやすさを極限まで改善 */
         .checkbox-container {
             display: flex; align-items: center; gap: 12px; padding: 15px;
             background: #fff; border: 1px solid #d2d2d7; border-radius: 10px; cursor: pointer;
@@ -79,27 +79,32 @@
         }
         .btn-primary { background: var(--apple-blue); color: white; }
         .btn-secondary { background: #e8e8ed; color: var(--apple-text); }
-        .btn-danger { background: #ff3b30; color: white; padding: 5px 10px; font-size: 11px; border-radius: 6px; width: auto; }
 
-        /* --- 表示崩れ対策：A4プレビューコンテナ --- */
+        /* 出勤簿内の「修正・削除」専用ボタン（押しやすさ重視） */
+        .action-btn {
+            display: inline-block; padding: 8px 12px; border-radius: 8px;
+            font-size: 12px; font-weight: 700; text-decoration: none; border: none;
+            color: white; margin: 2px; min-width: 50px; text-align: center;
+        }
+        .btn-edit { background-color: var(--apple-blue); }
+        .btn-del { background-color: var(--apple-red); }
+
+        /* A4プレビュー対策 */
         .preview-wrapper {
             width: 100%; overflow: hidden; background: #e8e8ed;
             border-radius: var(--apple-radius); padding: 10px 0;
             display: flex; justify-content: center; position: relative;
         }
-        /* A4本体：サイズは固定し、JSでscale(縮尺)を制御する */
         .a4-page {
             width: 210mm; min-height: 297mm; padding: 15mm; background: white;
             color: #000; flex-shrink: 0; transform-origin: top center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
-        /* テーブル文字重なり対策 */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
         th, td { border: 1px solid #000; padding: 8px 4px; font-size: 10px; text-align: left; word-wrap: break-word; overflow: hidden; }
         th { background: #f2f2f2; font-weight: bold; }
 
-        /* 請求書パーツ */
         .invoice-title { font-size: 26px; text-align: center; border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 25px; font-weight: bold; letter-spacing: 15px; }
         .total-box { font-size: 20px; font-weight: bold; border-bottom: 5px double #000; padding: 8px 0; margin: 20px 0; display: flex; justify-content: space-between; }
         .bank-info { border: 1px solid #000; padding: 10px; margin-top: 15px; font-size: 11px; white-space: pre-wrap; width: 100%; }
@@ -107,7 +112,7 @@
         #toast { 
             position: fixed; top: 80px; left: 50%; transform: translateX(-50%); 
             background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; 
-            border-radius: 25px; opacity: 0; transition: 0.3s; z-index: 3000; font-size: 14px;
+            border-radius: 25px; opacity: 0; transition: 0.3s; z-index: 3000; font-size: 14px; pointer-events: none;
         }
         .hidden { display: none; }
 
@@ -155,7 +160,7 @@
             </div>
             <div class="form-group"><label>経費 (非課税)</label><input type="number" id="expenses" value="0"></div>
             <div class="form-group"><label>メモ</label><textarea id="memo" rows="2"></textarea></div>
-            <button class="btn btn-primary" onclick="confirmSave()">登録 ＆ LINEコピー</button>
+            <button class="btn btn-primary" onclick="handleSaveAction()">登録してLINEコピー</button>
             <button id="cancel-edit" class="btn btn-secondary" style="display:none" onclick="clearEntryForm()">編集キャンセル</button>
         </div>
     </section>
@@ -168,7 +173,16 @@
             <div class="a4-page" id="att-page">
                 <h2 id="att-title" style="margin-top:0;"></h2>
                 <table>
-                    <thead><tr><th style="width:14%">日付</th><th style="width:26%">現場名</th><th style="width:24%">人員</th><th style="width:14%">区分</th><th>メモ</th><th class="no-print" style="width:12%">操作</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th style="width:14%">日付</th>
+                            <th style="width:24%">現場名</th>
+                            <th style="width:22%">人員</th>
+                            <th style="width:13%">区分</th>
+                            <th>メモ</th>
+                            <th class="no-print" style="width:27%">操作</th>
+                        </tr>
+                    </thead>
                     <tbody id="att-body"></tbody>
                 </table>
             </div>
@@ -244,7 +258,7 @@
 
 <script>
     let db;
-    const request = indexedDB.open("FieldManagerA4_v12", 1);
+    const request = indexedDB.open("FieldManagerA4_v14", 1);
 
     request.onupgradeneeded = (e) => {
         db = e.target.result;
@@ -268,10 +282,11 @@
         window.addEventListener('resize', adjustA4Scale);
     }
 
-    /* iPhone表示崩れ対策：画面幅に合わせてA4をスケールダウン */
     function adjustA4Scale() {
-        const containerWidth = document.querySelector('.container').offsetWidth - 24;
-        const a4WidthInPx = 210 * 3.78; // 210mm to px approx
+        const container = document.querySelector('.container');
+        if (!container) return;
+        const containerWidth = container.offsetWidth - 24;
+        const a4WidthInPx = 210 * 3.78; 
         const scale = containerWidth / a4WidthInPx;
         
         document.querySelectorAll('.a4-page').forEach(page => {
@@ -287,16 +302,43 @@
             b.classList.remove('active');
             if(b.getAttribute('onclick').includes(p)) b.classList.add('active');
         });
-        if(p === 'attendance') { renderAttendance(); setTimeout(adjustA4Scale, 50); }
-        if(p === 'invoice') { renderInvoice(); setTimeout(adjustA4Scale, 50); }
+        if(p === 'attendance') { renderAttendance(); setTimeout(adjustA4Scale, 100); }
+        if(p === 'invoice') { renderInvoice(); setTimeout(adjustA4Scale, 100); }
         if(p === 'settings') renderSettingsMembers();
     }
 
     function getLastName(n) { return n ? n.trim().split(/[ 　]/)[0] : ""; }
     function toggleOvertime() { document.getElementById('overtime-wrap').style.display = (document.getElementById('work-type').value === '残業') ? 'block' : 'none'; }
-    function confirmSave() { if(confirm("登録してLINEコピーしますか？")) saveLog(); }
 
-    async function saveLog() {
+    async function handleSaveAction() {
+        if(!document.getElementById('site-name').value) return alert("現場名を入力してください");
+        
+        if(confirm("登録してLINE報告文をコピーしますか？")) {
+            const site = document.getElementById('site-name').value;
+            const date = document.getElementById('date').value;
+            const type = document.getElementById('work-type').value;
+            const ot = document.getElementById('overtime-hours').value;
+            const members = Array.from(document.querySelectorAll('#member-selector .member-chip.selected')).map(el => el.innerText);
+            
+            const conf = await new Promise(r => db.transaction("config").objectStore("config").get("main").onsuccess = e => r(e.target.result?.value || {}));
+            const myName = conf.mName || "自分";
+
+            const dt = new Date(date);
+            const msg = `${dt.getMonth()+1}/${dt.getDate()} ${site} ${[getLastName(myName), ...members.map(getLastName)].join(' ')} ${members.length + 1}名 ${type === '残業' ? '残業'+ot+'h' : type}です。`;
+            
+            const area = document.createElement("textarea");
+            area.value = msg; 
+            area.style.position = "fixed"; area.style.left = "-9999px";
+            document.body.appendChild(area);
+            area.select(); 
+            document.execCommand("copy");
+            document.body.removeChild(area);
+
+            saveLog(conf);
+        }
+    }
+
+    async function saveLog(conf) {
         const id = document.getElementById('edit-id').value;
         const date = document.getElementById('date').value;
         const site = document.getElementById('site-name').value;
@@ -308,11 +350,7 @@
         const members = Array.from(document.querySelectorAll('#member-selector .member-chip.selected')).map(el => el.innerText);
         const memo = document.getElementById('memo').value;
 
-        if(!site) return alert("現場名を入力してください");
-
-        const conf = await new Promise(r => db.transaction("config").objectStore("config").get("main").onsuccess = e => r(e.target.result?.value || {}));
         const tripAmount = tripCheck ? parseInt(conf.tripPay || 1000) : 0;
-
         let total = (type === '移動日50') ? base * 0.5 : base;
         if(type === '残業') total += Math.floor((base / 8) * 1.25 * ot);
         total += exp + tripAmount;
@@ -321,20 +359,10 @@
         if(id) data.id = parseInt(id);
 
         db.transaction("logs", "readwrite").objectStore("logs").put(data).onsuccess = () => {
-            copyToLine(data, conf.mName || "自分");
             clearEntryForm();
-            showToast("保存 ＆ コピー完了");
+            showToast("保存完了 ＆ LINEコピーしました");
             updateSiteDatalist();
         };
-    }
-
-    function copyToLine(d, myName) {
-        const dt = new Date(d.date);
-        const msg = `${dt.getMonth()+1}/${dt.getDate()} ${d.site} ${[getLastName(myName), ...d.members.map(getLastName)].join(' ')} ${d.members.length + 1}名 ${d.type === '残業' ? '残業'+d.ot+'h' : d.type}です。`;
-        const area = document.createElement("textarea");
-        area.value = msg; document.body.appendChild(area);
-        area.select(); document.execCommand("copy");
-        document.body.removeChild(area);
     }
 
     function renderAttendance() {
@@ -352,7 +380,10 @@
                         <td>${[myName, ...l.members.map(getLastName)].join(' ')}</td>
                         <td>${l.type === '残業' ? l.ot+'h' : l.type}</td>
                         <td style="font-size:8px;">${l.memo}</td>
-                        <td class="no-print"><button onclick="editLog(${l.id})" style="color:var(--apple-blue); border:none; background:none; font-size:9px;">修</button><button onclick="deleteLog(${l.id})" style="color:#ff3b30; border:none; background:none; font-size:9px; margin-left:4px;">消</button></td>
+                        <td class="no-print">
+                            <button class="action-btn btn-edit" onclick="editLog(${l.id})">修正</button>
+                            <button class="action-btn btn-del" onclick="deleteLog(${l.id})">削除</button>
+                        </td>
                     </tr>`).join('');
                 adjustA4Scale();
             };
@@ -407,7 +438,7 @@
         };
     }
 
-    function deleteLog(id) { if(confirm("削除しますか？")) db.transaction("logs", "readwrite").objectStore("logs").delete(id).onsuccess = renderAttendance; }
+    function deleteLog(id) { if(confirm("本当にこの記録を削除しますか？")) db.transaction("logs", "readwrite").objectStore("logs").delete(id).onsuccess = renderAttendance; }
     function addMember() {
         const name = document.getElementById('new-member').value.trim();
         if(!name) return;
@@ -424,11 +455,11 @@
         db.transaction("members", "readonly").objectStore("members").getAll().onsuccess = (e) => {
             document.getElementById('settings-member-list').innerHTML = e.target.result.map(m => `
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px; background:#f5f5f7; padding:12px; border-radius:10px; align-items:center;">
-                    <span>${m.name}</span><button class="btn-danger" onclick="deleteMember('${m.name}')">削除</button>
+                    <span>${m.name}</span><button class="action-btn btn-del" onclick="deleteMember('${m.name}')">削除</button>
                 </div>`).join('');
         };
     }
-    function deleteMember(name) { db.transaction("members", "readwrite").objectStore("members").delete(name).onsuccess = () => { renderSettingsMembers(); renderMemberSelector(); }; }
+    function deleteMember(name) { if(confirm(name + " を名簿から削除しますか？")) db.transaction("members", "readwrite").objectStore("members").delete(name).onsuccess = () => { renderSettingsMembers(); renderMemberSelector(); }; }
 
     function saveConfig() {
         const conf = {

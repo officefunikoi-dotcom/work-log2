@@ -110,7 +110,6 @@
             border-radius: 30px; opacity: 0; transition: 0.3s; z-index: 3000; font-size: 14px; pointer-events: none;
         }
         
-        #clipboard-box { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
         .hidden { display: none; }
 
         @media print {
@@ -123,8 +122,6 @@
     </style>
 </head>
 <body>
-
-<textarea id="clipboard-box"></textarea>
 
 <nav id="main-nav">
     <button onclick="showPage('entry')" class="active">日報入力</button>
@@ -148,7 +145,7 @@
                 <datalist id="site-list"></datalist>
             </div>
             <div class="form-group">
-                <label>同行メンバー (タップで選択)</label>
+                <label>同行メンバー</label>
                 <div id="member-selector" class="member-list"></div>
             </div>
             <div class="form-group">
@@ -165,7 +162,7 @@
                 <input type="number" id="overtime-hours" step="0.5" value="0">
             </div>
             <div class="form-group">
-                <label>基本日当 (税込)</label>
+                <label>基本日当</label>
                 <input type="number" id="base-wage">
             </div>
             <div class="form-group">
@@ -175,15 +172,15 @@
                 </label>
             </div>
             <div class="form-group">
-                <label>経費 (実費 / 非課税)</label>
+                <label>経費</label>
                 <input type="number" id="expenses" value="0">
             </div>
             <div class="form-group">
                 <label>メモ</label>
                 <textarea id="memo" rows="2"></textarea>
             </div>
-            <button class="btn btn-primary" onclick="processSaveAndCopy()">登録してLINEコピー</button>
-            <button id="cancel-edit" class="btn btn-secondary" style="display:none" onclick="clearEntryForm()">編集をキャンセル</button>
+            <button class="btn btn-primary" onclick="confirmSave()">保存してLINEコピー</button>
+            <button id="cancel-edit" class="btn btn-secondary" style="display:none" onclick="clearEntryForm()">キャンセル</button>
         </div>
     </section>
 
@@ -194,7 +191,7 @@
         </div>
         <div class="preview-wrapper">
             <div class="a4-page" id="att-page">
-                <h2 id="att-title" style="margin-top:0;"></h2>
+                <h2 id="att-title" style="margin-top:0; font-size:22px;"></h2>
                 <table>
                     <thead>
                         <tr>
@@ -260,29 +257,16 @@
             <div id="settings-member-list"></div>
         </div>
         <div class="card">
-            <h3>金額設定</h3>
-            <div class="form-group"><label>標準日当 (税込)</label><input type="number" id="set-base-wage" onchange="saveConfig()"></div>
-            <div class="form-group"><label>出張手当 (税込)</label><input type="number" id="set-trip-pay" onchange="saveConfig()"></div>
+            <h3>金額・手当設定</h3>
+            <div class="form-group"><label>標準日当</label><input type="number" id="set-base-wage" onchange="saveConfig()"></div>
+            <div class="form-group"><label>出張手当</label><input type="number" id="set-trip-pay" onchange="saveConfig()"></div>
         </div>
         <div class="card">
-            <h3>請求先情報</h3>
+            <h3>請求先・元情報設定</h3>
             <div class="form-group"><label>会社名</label><input type="text" id="set-c-name" onchange="saveConfig()"></div>
-            <div class="form-group"><label>会社住所</label><input type="text" id="set-c-addr" onchange="saveConfig()"></div>
-        </div>
-        <div class="card">
-            <h3>請求元情報</h3>
             <div class="form-group"><label>氏名/屋号</label><input type="text" id="set-m-name" onchange="saveConfig()"></div>
-            <div class="form-group"><label>住所</label><input type="text" id="set-m-addr" onchange="saveConfig()"></div>
             <div class="form-group"><label>電話番号</label><input type="text" id="set-m-tel" onchange="saveConfig()"></div>
-        </div>
-        <div class="card">
-            <h3>振込先情報</h3>
-            <textarea id="set-bank" rows="3" onchange="saveConfig()"></textarea>
-        </div>
-        <div class="card">
-            <h3>データ管理</h3>
-            <button class="btn btn-primary" onclick="exportData()">バックアップ保存</button>
-            <button class="btn btn-secondary" onclick="importData()">データ復元</button>
+            <div class="form-group"><label>振込先</label><textarea id="set-bank" rows="3" onchange="saveConfig()"></textarea></div>
         </div>
     </section>
 </div>
@@ -339,73 +323,62 @@
     function getLastName(n) { return n ? n.trim().split(/[ 　]/)[0] : ""; }
     function toggleOvertime() { document.getElementById('overtime-wrap').style.display = (document.getElementById('work-type').value === '残業') ? 'block' : 'none'; }
 
-    // LINEコピーと登録を確実に行うための2段ダイアログ
-    async function processSaveAndCopy() {
-        if(!document.getElementById('site-name').value) return alert("現場名を入力してください");
-        
-        if(confirm("データを登録しますか？")) {
-            // 保存処理
-            const conf = await new Promise(r => db.transaction("config").objectStore("config").get("main").onsuccess = e => r(e.target.result?.value || {}));
-            const site = document.getElementById('site-name').value;
-            const date = document.getElementById('date').value;
-            const type = document.getElementById('work-type').value;
-            const ot = document.getElementById('overtime-hours').value;
-            const members = Array.from(document.querySelectorAll('#member-selector .member-chip.selected')).map(el => el.innerText);
-            const myName = getLastName(conf.mName || "自分");
-            const dt = new Date(date);
-            
-            // 保存
-            await saveLog(conf);
+    // --- LINEコピー機能 (旧バージョンのロジックを採用) ---
+    function confirmSave() { if(confirm("登録しますか？")) saveLog(); }
 
-            // コピー文作成
-            const msg = `${dt.getMonth()+1}/${dt.getDate()} ${site} ${[myName, ...members.map(getLastName)].join(' ')} ${members.length + 1}名 ${type === '残業' ? '残業'+ot+'h' : type}です。`;
-            const cb = document.getElementById('clipboard-box');
-            cb.value = msg;
-            
-            // 強制コピー
-            cb.select();
-            cb.setSelectionRange(0, 99999);
-            const success = document.execCommand("copy");
+    async function saveLog() {
+        const id = document.getElementById('edit-id').value;
+        const date = document.getElementById('date').value;
+        const site = document.getElementById('site-name').value;
+        const type = document.getElementById('work-type').value;
+        const ot = parseFloat(document.getElementById('overtime-hours').value) || 0;
+        const base = parseInt(document.getElementById('base-wage').value) || 0;
+        const exp = parseInt(document.getElementById('expenses').value) || 0;
+        const tripCheck = document.getElementById('is-trip').checked;
+        const members = Array.from(document.querySelectorAll('#member-selector .member-chip.selected')).map(el => el.innerText);
+        const memo = document.getElementById('memo').value;
 
-            if(success) {
-                alert("登録が完了し、LINE報告文をコピーしました！\nLINEに貼り付けてください。");
-            } else {
-                alert("登録は完了しましたが、コピーに失敗しました。");
-            }
-            
+        if(!site) return alert("現場名を入力してください");
+
+        const conf = await new Promise(r => db.transaction("config").objectStore("config").get("main").onsuccess = e => r(e.target.result?.value || {}));
+        const tripAmount = tripCheck ? parseInt(conf.tripPay || 1000) : 0;
+
+        let total = (type === '移動日50') ? base * 0.5 : base;
+        if(type === '残業') total += Math.floor((base / 8) * 1.25 * ot);
+        total += exp + tripAmount;
+
+        const data = { date, site, type, ot, base, exp, tripAmount, members, total, memo, month: date.substring(0,7) };
+        if(id) data.id = parseInt(id);
+
+        db.transaction("logs", "readwrite").objectStore("logs").put(data).onsuccess = () => {
+            copyToLine(data, conf.mName || "自分");
             clearEntryForm();
+            showToast("登録しました！コピー完了。");
+            updateSiteDatalist();
+        };
+    }
+
+    function copyToLine(d, myName) {
+        const dt = new Date(d.date);
+        const dateStr = `${dt.getMonth()+1}/${dt.getDate()}`;
+        const membersStr = [getLastName(myName), ...d.members.map(getLastName)].join(' ');
+        const count = d.members.length + 1;
+        const msg = `${dateStr} ${d.site} ${membersStr} ${count}名 ${d.type === '残業' ? '残業'+d.ot+'h' : d.type}です。`;
+        
+        // クリップボードAPIを使用してコピー
+        if(navigator.clipboard) {
+            navigator.clipboard.writeText(msg).catch(err => {
+                console.error('Copy failed', err);
+            });
         }
     }
 
-    async function saveLog(conf) {
-        return new Promise(resolve => {
-            const id = document.getElementById('edit-id').value;
-            const date = document.getElementById('date').value;
-            const site = document.getElementById('site-name').value;
-            const type = document.getElementById('work-type').value;
-            const ot = parseFloat(document.getElementById('overtime-hours').value) || 0;
-            const base = parseInt(document.getElementById('base-wage').value) || 0;
-            const exp = parseInt(document.getElementById('expenses').value) || 0;
-            const tripCheck = document.getElementById('is-trip').checked;
-            const members = Array.from(document.querySelectorAll('#member-selector .member-chip.selected')).map(el => el.innerText);
-            const memo = document.getElementById('memo').value;
-
-            const tripAmount = tripCheck ? parseInt(conf.tripPay || 1000) : 0;
-            let total = 0;
-            if(type === '移動日50') total = base * 0.5;
-            else if(type === '移動日100' || type === '定時終了') total = base;
-            else if(type === '残業') total = base + Math.floor((base / 8) * 1.25 * ot);
-            total += exp + tripAmount;
-
-            const data = { date, site, type, ot, base, exp, tripAmount, members, total, memo, month: date.substring(0,7) };
-            if(id) data.id = parseInt(id);
-
-            db.transaction("logs", "readwrite").objectStore("logs").put(data).onsuccess = () => {
-                updateSiteDatalist();
-                resolve();
-            };
-        });
+    function showToast(m) {
+        const t = document.getElementById('toast');
+        t.innerText = m; t.style.opacity = 1;
+        setTimeout(() => t.style.opacity = 0, 2500);
     }
+    // --- LINEコピー機能 ここまで ---
 
     function renderAttendance() {
         const m = document.getElementById('att-month').value;
@@ -439,7 +412,7 @@
             const c = ec.target.result?.value || {};
             document.getElementById('disp-c-name').innerText = (c.cName || "◯◯株式会社") + " 御中";
             document.getElementById('disp-c-addr').innerText = c.cAddr || "";
-            document.getElementById('disp-m-name').innerText = c.mName || "";
+            document.getElementById('disp-m-name').innerText = (c.mName || "");
             document.getElementById('disp-m-addr').innerText = c.mAddr || "";
             document.getElementById('disp-m-tel').innerText = c.mTel || "";
             document.getElementById('disp-bank').innerText = "【お振込先】\n" + (c.bank || "");
@@ -525,7 +498,6 @@
             baseWage: document.getElementById('set-base-wage').value,
             tripPay: document.getElementById('set-trip-pay').value,
             cName: document.getElementById('set-c-name').value,
-            cAddr: document.getElementById('set-c-addr').value,
             mName: document.getElementById('set-m-name').value,
             mAddr: document.getElementById('set-m-addr').value,
             mTel: document.getElementById('set-m-tel').value,
@@ -543,7 +515,6 @@
                     document.getElementById('set-trip-pay').value = v.tripPay || 1000;
                     document.getElementById('base-wage').value = v.baseWage || 18000;
                     document.getElementById('set-c-name').value = v.cName || "";
-                    document.getElementById('set-c-addr').value = v.cAddr || "";
                     document.getElementById('set-m-name').value = v.mName || "";
                     document.getElementById('set-m-addr').value = v.mAddr || "";
                     document.getElementById('set-m-tel').value = v.mTel || "";
@@ -559,50 +530,6 @@
             const sites = [...new Set(e.target.result.map(l => l.site))];
             document.getElementById('site-list').innerHTML = sites.map(s => `<option value="${s}">`).join('');
         };
-    }
-
-    function exportData() {
-        const data = {};
-        const stores = ["logs", "config", "members"];
-        let count = 0;
-        stores.forEach(s => {
-            db.transaction(s, "readonly").objectStore(s).getAll().onsuccess = (e) => {
-                data[s] = e.target.result;
-                count++;
-                if(count === stores.length) {
-                    const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
-                    const a = document.createElement("a");
-                    a.href = URL.createObjectURL(blob);
-                    a.download = `FieldData_${new Date().toISOString().substring(0,10)}.json`;
-                    a.click();
-                }
-            };
-        });
-    }
-
-    function importData() {
-        const input = document.createElement("input");
-        input.type = "file";
-        input.onchange = (e) => {
-            const reader = new FileReader();
-            reader.onload = (re) => {
-                const d = JSON.parse(re.target.result);
-                Object.keys(d).forEach(s => {
-                    const tx = db.transaction(s, "readwrite");
-                    d[s].forEach(item => tx.objectStore(s).put(item));
-                });
-                alert("復元完了！再読み込みします。");
-                location.reload();
-            };
-            reader.readAsText(e.target.files[0]);
-        };
-        input.click();
-    }
-
-    function showToast(m) {
-        const t = document.getElementById('toast');
-        t.innerText = m; t.style.opacity = 1;
-        setTimeout(() => t.style.opacity = 0, 2500);
     }
 
     function clearEntryForm() {

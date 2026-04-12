@@ -50,7 +50,6 @@
 
         h2, h3 { font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 15px; }
 
-        /* フォーム入力 */
         .form-group { margin-bottom: 14px; }
         label { display: block; font-size: 13px; font-weight: 600; color: var(--apple-sub); margin-bottom: 5px; }
         input, select, textarea {
@@ -58,16 +57,12 @@
             font-size: 16px; background: #fff; appearance: none;
         }
         
-        /* チェックボックス風 */
         .checkbox-container {
             display: flex; align-items: center; gap: 12px; padding: 15px;
             background: #fff; border: 1px solid #d2d2d7; border-radius: 10px; cursor: pointer;
         }
-        .checkbox-container input[type="checkbox"] {
-            width: 24px; height: 24px; appearance: checkbox; flex-shrink: 0;
-        }
+        .checkbox-container input[type="checkbox"] { width: 24px; height: 24px; appearance: checkbox; flex-shrink: 0; }
 
-        /* 同行者チップ */
         .member-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
         .member-chip {
             padding: 8px 14px; border-radius: 20px; background: #f0f0f2;
@@ -82,42 +77,40 @@
         .btn-primary { background: var(--apple-blue); color: white; }
         .btn-secondary { background: #e8e8ed; color: var(--apple-text); }
 
-        /* 出勤簿内のアクションボタン（押しやすさ重視） */
         .action-btn {
-            display: inline-block; padding: 10px 14px; border-radius: 8px;
-            font-size: 12px; font-weight: 700; border: none; color: white; margin: 4px 2px;
+            display: inline-block; padding: 8px 10px; border-radius: 6px;
+            font-size: 11px; font-weight: 700; border: none; color: white; margin: 2px;
         }
         .btn-edit { background-color: var(--apple-blue); }
         .btn-del { background-color: var(--apple-red); }
 
-        /* A4 プレビュー（画面上での見え方） */
+        /* A4 プレビュー */
         .preview-wrapper {
             width: 100%; overflow: hidden; background: #e8e8ed;
             border-radius: var(--apple-radius); padding: 10px 0;
             display: flex; justify-content: center; position: relative;
         }
         .a4-page {
-            width: 210mm; min-height: 297mm; padding: 15mm; background: white;
+            width: 210mm; min-height: 297mm; padding: 12mm; background: white;
             color: #000; flex-shrink: 0; transform-origin: top center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
-        th, td { border: 1px solid #000; padding: 8px 4px; font-size: 10px; text-align: left; word-wrap: break-word; }
-        th { background: #f2f2f2; font-weight: bold; }
+        th, td { border: 1px solid #000; padding: 6px 4px; font-size: 10px; text-align: left; word-wrap: break-word; vertical-align: middle; }
+        th { background: #f2f2f2; font-weight: bold; text-align: center; }
 
-        /* 請求書パーツ */
         .invoice-title { font-size: 26px; text-align: center; border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 25px; font-weight: bold; letter-spacing: 15px; }
         .total-box { font-size: 20px; font-weight: bold; border-bottom: 5px double #000; padding: 8px 0; margin: 20px 0; display: flex; justify-content: space-between; }
         .bank-info { border: 1px solid #000; padding: 10px; margin-top: 15px; font-size: 11px; white-space: pre-wrap; width: 100%; line-height: 1.5; }
 
-        /* トースト・隠し要素 */
         #toast { 
-            position: fixed; top: 80px; left: 50%; transform: translateX(-50%); 
-            background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; 
-            border-radius: 25px; opacity: 0; transition: 0.3s; z-index: 3000; font-size: 14px; pointer-events: none;
+            position: fixed; top: 100px; left: 50%; transform: translateX(-50%); 
+            background: rgba(0,0,0,0.85); color: #fff; padding: 14px 28px; 
+            border-radius: 30px; opacity: 0; transition: 0.3s; z-index: 3000; font-size: 14px; pointer-events: none;
         }
-        #clipboard-box { position: fixed; top: -9999px; left: -9999px; opacity: 0; }
+        
+        #clipboard-box { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
         .hidden { display: none; }
 
         @media print {
@@ -131,7 +124,7 @@
 </head>
 <body>
 
-<textarea id="clipboard-box" readonly></textarea>
+<textarea id="clipboard-box"></textarea>
 
 <nav id="main-nav">
     <button onclick="showPage('entry')" class="active">日報入力</button>
@@ -189,7 +182,7 @@
                 <label>メモ</label>
                 <textarea id="memo" rows="2"></textarea>
             </div>
-            <button class="btn btn-primary" onclick="handleSaveAction()">登録してLINEコピー</button>
+            <button class="btn btn-primary" onclick="processSaveAndCopy()">登録してLINEコピー</button>
             <button id="cancel-edit" class="btn btn-secondary" style="display:none" onclick="clearEntryForm()">編集をキャンセル</button>
         </div>
     </section>
@@ -205,19 +198,19 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width:14%">日付</th>
-                            <th style="width:24%">現場名</th>
-                            <th style="width:22%">人員</th>
-                            <th style="width:13%">区分</th>
-                            <th>メモ</th>
-                            <th class="no-print" style="width:27%">操作</th>
+                            <th style="width:11%">日付</th>
+                            <th style="width:23%">現場名</th>
+                            <th style="width:20%">人員</th>
+                            <th style="width:11%">区分</th>
+                            <th style="width:17%">メモ</th>
+                            <th class="no-print" style="width:18%">操作</th>
                         </tr>
                     </thead>
                     <tbody id="att-body"></tbody>
                 </table>
             </div>
         </div>
-        <button class="btn btn-secondary no-print" onclick="window.print()">印刷 / PDF保存</button>
+        <button class="btn btn-secondary no-print" onclick="window.print()" style="margin-top:10px;">印刷 / PDF保存</button>
     </section>
 
     <section id="page-invoice" class="hidden">
@@ -241,19 +234,9 @@
                         <div id="disp-m-tel" style="font-size:10px"></div>
                     </div>
                 </div>
-                <div class="total-box">
-                    <span>ご請求金額</span>
-                    <span id="disp-total"></span>
-                </div>
+                <div class="total-box"><span>ご請求金額</span><span id="disp-total"></span></div>
                 <table>
-                    <thead>
-                        <tr>
-                            <th style="width:18%">日付</th>
-                            <th>現場名・摘要</th>
-                            <th style="width:20%">備考</th>
-                            <th style="width:22%">単価 (税抜)</th>
-                        </tr>
-                    </thead>
+                    <thead><tr><th style="width:16%">日付</th><th>現場名・摘要</th><th style="width:16%">備考</th><th style="width:20%">単価(税抜)</th></tr></thead>
                     <tbody id="inv-body"></tbody>
                     <tfoot>
                         <tr><td colspan="3" style="text-align:right; font-weight:bold;">小計 (税抜)</td><td id="inv-subtotal" style="text-align:right"></td></tr>
@@ -264,7 +247,7 @@
                 <div class="bank-info" id="disp-bank"></div>
             </div>
         </div>
-        <button class="btn btn-secondary no-print" onclick="window.print()">印刷 / PDF保存</button>
+        <button class="btn btn-secondary no-print" onclick="window.print()" style="margin-top:10px;">印刷 / PDF保存</button>
     </section>
 
     <section id="page-settings" class="hidden">
@@ -276,41 +259,30 @@
             </div>
             <div id="settings-member-list"></div>
         </div>
-
         <div class="card">
             <h3>金額設定</h3>
-            <div class="form-group">
-                <label>標準日当 (税込)</label>
-                <input type="number" id="set-base-wage" onchange="saveConfig()">
-            </div>
-            <div class="form-group">
-                <label>出張手当 (税込)</label>
-                <input type="number" id="set-trip-pay" value="1000" onchange="saveConfig()">
-            </div>
+            <div class="form-group"><label>標準日当 (税込)</label><input type="number" id="set-base-wage" onchange="saveConfig()"></div>
+            <div class="form-group"><label>出張手当 (税込)</label><input type="number" id="set-trip-pay" onchange="saveConfig()"></div>
         </div>
-
         <div class="card">
             <h3>請求先情報</h3>
             <div class="form-group"><label>会社名</label><input type="text" id="set-c-name" onchange="saveConfig()"></div>
             <div class="form-group"><label>会社住所</label><input type="text" id="set-c-addr" onchange="saveConfig()"></div>
         </div>
-
         <div class="card">
-            <h3>請求元情報 (自分)</h3>
+            <h3>請求元情報</h3>
             <div class="form-group"><label>氏名/屋号</label><input type="text" id="set-m-name" onchange="saveConfig()"></div>
             <div class="form-group"><label>住所</label><input type="text" id="set-m-addr" onchange="saveConfig()"></div>
             <div class="form-group"><label>電話番号</label><input type="text" id="set-m-tel" onchange="saveConfig()"></div>
         </div>
-
         <div class="card">
             <h3>振込先情報</h3>
-            <textarea id="set-bank" rows="3" placeholder="銀行名 支店名 口座種別 番号 名義" onchange="saveConfig()"></textarea>
+            <textarea id="set-bank" rows="3" onchange="saveConfig()"></textarea>
         </div>
-
         <div class="card">
-            <h3>データ保存・復元</h3>
-            <button class="btn btn-primary" onclick="exportData()">全データを書き出す (保存)</button>
-            <button class="btn btn-secondary" onclick="importData()">データを読み込む (復元)</button>
+            <h3>データ管理</h3>
+            <button class="btn btn-primary" onclick="exportData()">バックアップ保存</button>
+            <button class="btn btn-secondary" onclick="importData()">データ復元</button>
         </div>
     </section>
 </div>
@@ -319,7 +291,7 @@
 
 <script>
     let db;
-    const request = indexedDB.open("FieldManagerA4_v13", 1);
+    const request = indexedDB.open("FieldManagerA4_v15", 1);
 
     request.onupgradeneeded = (e) => {
         db = e.target.result;
@@ -343,12 +315,10 @@
         window.addEventListener('resize', adjustA4Scale);
     }
 
-    // A4プレビューを画面幅に合わせて縮小
     function adjustA4Scale() {
         const containerWidth = document.querySelector('.container').offsetWidth - 24;
         const a4WidthInPx = 210 * 3.78; 
         const scale = containerWidth / a4WidthInPx;
-        
         document.querySelectorAll('.a4-page').forEach(page => {
             page.style.transform = `scale(${scale})`;
             page.parentElement.style.height = (page.offsetHeight * scale) + "px";
@@ -359,84 +329,82 @@
         document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
         document.getElementById('page-' + p).classList.remove('hidden');
         document.querySelectorAll('#main-nav button').forEach(b => {
-            b.classList.remove('active');
-            if(b.getAttribute('onclick').includes(p)) b.classList.add('active');
+            b.classList.toggle('active', b.getAttribute('onclick').includes(p));
         });
-        if(p === 'attendance') { renderAttendance(); setTimeout(adjustA4Scale, 100); }
-        if(p === 'invoice') { renderInvoice(); setTimeout(adjustA4Scale, 100); }
+        if(p === 'attendance') { renderAttendance(); setTimeout(adjustA4Scale, 150); }
+        if(p === 'invoice') { renderInvoice(); setTimeout(adjustA4Scale, 150); }
         if(p === 'settings') renderSettingsMembers();
     }
 
     function getLastName(n) { return n ? n.trim().split(/[ 　]/)[0] : ""; }
+    function toggleOvertime() { document.getElementById('overtime-wrap').style.display = (document.getElementById('work-type').value === '残業') ? 'block' : 'none'; }
 
-    function toggleOvertime() {
-        document.getElementById('overtime-wrap').style.display = (document.getElementById('work-type').value === '残業') ? 'block' : 'none';
-    }
-
-    // 登録とLINEコピーの統合
-    async function handleSaveAction() {
+    // LINEコピーと登録を確実に行うための2段ダイアログ
+    async function processSaveAndCopy() {
         if(!document.getElementById('site-name').value) return alert("現場名を入力してください");
         
-        // 1. まずコピー用テキストを作成して準備
-        const site = document.getElementById('site-name').value;
-        const date = document.getElementById('date').value;
-        const type = document.getElementById('work-type').value;
-        const ot = document.getElementById('overtime-hours').value;
-        const members = Array.from(document.querySelectorAll('#member-selector .member-chip.selected')).map(el => el.innerText);
-        
-        const conf = await new Promise(r => db.transaction("config").objectStore("config").get("main").onsuccess = e => r(e.target.result?.value || {}));
-        const myName = conf.mName || "自分";
+        if(confirm("データを登録しますか？")) {
+            // 保存処理
+            const conf = await new Promise(r => db.transaction("config").objectStore("config").get("main").onsuccess = e => r(e.target.result?.value || {}));
+            const site = document.getElementById('site-name').value;
+            const date = document.getElementById('date').value;
+            const type = document.getElementById('work-type').value;
+            const ot = document.getElementById('overtime-hours').value;
+            const members = Array.from(document.querySelectorAll('#member-selector .member-chip.selected')).map(el => el.innerText);
+            const myName = getLastName(conf.mName || "自分");
+            const dt = new Date(date);
+            
+            // 保存
+            await saveLog(conf);
 
-        const dt = new Date(date);
-        const msg = `${dt.getMonth()+1}/${dt.getDate()} ${site} ${[getLastName(myName), ...members.map(getLastName)].join(' ')} ${members.length + 1}名 ${type === '残業' ? '残業'+ot+'h' : type}です。`;
-        
-        const cb = document.getElementById('clipboard-box');
-        cb.value = msg;
-
-        // 2. 確認ダイアログ
-        if(confirm("登録してLINE報告文をコピーしますか？")) {
-            // 3. iPhone対応のコピー処理
+            // コピー文作成
+            const msg = `${dt.getMonth()+1}/${dt.getDate()} ${site} ${[myName, ...members.map(getLastName)].join(' ')} ${members.length + 1}名 ${type === '残業' ? '残業'+ot+'h' : type}です。`;
+            const cb = document.getElementById('clipboard-box');
+            cb.value = msg;
+            
+            // 強制コピー
             cb.select();
             cb.setSelectionRange(0, 99999);
-            document.execCommand("copy");
+            const success = document.execCommand("copy");
+
+            if(success) {
+                alert("登録が完了し、LINE報告文をコピーしました！\nLINEに貼り付けてください。");
+            } else {
+                alert("登録は完了しましたが、コピーに失敗しました。");
+            }
             
-            // 4. 保存実行
-            saveLog(conf);
+            clearEntryForm();
         }
     }
 
     async function saveLog(conf) {
-        const id = document.getElementById('edit-id').value;
-        const date = document.getElementById('date').value;
-        const site = document.getElementById('site-name').value;
-        const type = document.getElementById('work-type').value;
-        const ot = parseFloat(document.getElementById('overtime-hours').value) || 0;
-        const base = parseInt(document.getElementById('base-wage').value) || 0;
-        const exp = parseInt(document.getElementById('expenses').value) || 0;
-        const tripCheck = document.getElementById('is-trip').checked;
-        const members = Array.from(document.querySelectorAll('#member-selector .member-chip.selected')).map(el => el.innerText);
-        const memo = document.getElementById('memo').value;
+        return new Promise(resolve => {
+            const id = document.getElementById('edit-id').value;
+            const date = document.getElementById('date').value;
+            const site = document.getElementById('site-name').value;
+            const type = document.getElementById('work-type').value;
+            const ot = parseFloat(document.getElementById('overtime-hours').value) || 0;
+            const base = parseInt(document.getElementById('base-wage').value) || 0;
+            const exp = parseInt(document.getElementById('expenses').value) || 0;
+            const tripCheck = document.getElementById('is-trip').checked;
+            const members = Array.from(document.querySelectorAll('#member-selector .member-chip.selected')).map(el => el.innerText);
+            const memo = document.getElementById('memo').value;
 
-        // 出張手当計算
-        const tripAmount = tripCheck ? parseInt(conf.tripPay || 1000) : 0;
-        
-        // 金額ロジック
-        let total = 0;
-        if(type === '移動日50') total = base * 0.5;
-        else if(type === '移動日100') total = base;
-        else if(type === '定時終了') total = base;
-        else if(type === '残業') total = base + Math.floor((base / 8) * 1.25 * ot);
-        
-        total += exp + tripAmount;
+            const tripAmount = tripCheck ? parseInt(conf.tripPay || 1000) : 0;
+            let total = 0;
+            if(type === '移動日50') total = base * 0.5;
+            else if(type === '移動日100' || type === '定時終了') total = base;
+            else if(type === '残業') total = base + Math.floor((base / 8) * 1.25 * ot);
+            total += exp + tripAmount;
 
-        const data = { date, site, type, ot, base, exp, tripAmount, members, total, memo, month: date.substring(0,7) };
-        if(id) data.id = parseInt(id);
+            const data = { date, site, type, ot, base, exp, tripAmount, members, total, memo, month: date.substring(0,7) };
+            if(id) data.id = parseInt(id);
 
-        db.transaction("logs", "readwrite").objectStore("logs").put(data).onsuccess = () => {
-            clearEntryForm();
-            showToast("保存 & コピー完了");
-            updateSiteDatalist();
-        };
+            db.transaction("logs", "readwrite").objectStore("logs").put(data).onsuccess = () => {
+                updateSiteDatalist();
+                resolve();
+            };
+        });
     }
 
     function renderAttendance() {
@@ -448,15 +416,14 @@
             const logs = e.target.result.filter(l => l.month === m).sort((a,b) => a.date.localeCompare(b.date));
             db.transaction("config").objectStore("config").get("main").onsuccess = (ec) => {
                 const myName = getLastName(ec.target.result?.value.mName || "自分");
-                
                 document.getElementById('att-body').innerHTML = logs.map(l => `
                     <tr>
-                        <td>${l.date.substring(5).replace('-','/')}</td>
+                        <td style="text-align:center">${l.date.substring(5).replace('-','/')}</td>
                         <td>${l.site}</td>
-                        <td>${[myName, ...l.members.map(getLastName)].join(' ')}<br>(${l.members.length + 1}名)</td>
-                        <td>${l.type === '残業' ? l.ot+'h' : l.type}</td>
-                        <td style="font-size:8px;">${l.memo}</td>
-                        <td class="no-print">
+                        <td>${[myName, ...l.members.map(getLastName)].join(' ')}<br><span style="font-size:8px">(${l.members.length + 1}名)</span></td>
+                        <td style="text-align:center">${l.type === '残業' ? l.ot+'h' : l.type.replace('移動日','移')}</td>
+                        <td style="font-size:8px; line-height:1.2;">${l.memo || ""}</td>
+                        <td class="no-print" style="text-align:center">
                             <button class="action-btn btn-edit" onclick="editLog(${l.id})">修正</button>
                             <button class="action-btn btn-del" onclick="deleteLog(${l.id})">削除</button>
                         </td>
@@ -480,16 +447,12 @@
 
             db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (el) => {
                 const logs = el.target.result.filter(l => l.month === m).sort((a,b) => a.date.localeCompare(b.date));
-                let gTotal = 0;
-                let subTotal = 0;
-                
+                let gTotal = 0, subTotal = 0;
                 document.getElementById('inv-body').innerHTML = logs.map(l => {
                     const lineSub = Math.ceil((l.total - l.exp) / 1.1) + l.exp;
-                    subTotal += lineSub;
-                    gTotal += l.total;
-                    return `<tr><td>${l.date.replace(/-/g,'/')}</td><td>${l.site}</td><td>${l.type}</td><td style="text-align:right">¥${lineSub.toLocaleString()}</td></tr>`;
+                    subTotal += lineSub; gTotal += l.total;
+                    return `<tr><td style="text-align:center">${l.date.replace(/-/g,'/')}</td><td>${l.site}</td><td style="text-align:center">${l.type}</td><td style="text-align:right">¥${lineSub.toLocaleString()}</td></tr>`;
                 }).join('');
-
                 document.getElementById('disp-total').innerText = "¥ " + gTotal.toLocaleString() + " -";
                 document.getElementById('inv-subtotal').innerText = "¥" + subTotal.toLocaleString();
                 document.getElementById('inv-tax').innerText = "¥" + (gTotal - subTotal).toLocaleString();
@@ -514,8 +477,6 @@
             document.getElementById('memo').value = l.memo;
             document.getElementById('cancel-edit').style.display = "block";
             toggleOvertime();
-            
-            // 同行者チップ復元
             document.querySelectorAll('#member-selector .member-chip').forEach(el => {
                 el.classList.toggle('selected', l.members.includes(el.innerText));
             });
@@ -524,7 +485,7 @@
     }
 
     function deleteLog(id) {
-        if(confirm("このデータを削除してよろしいですか？")) {
+        if(confirm("このデータを削除しますか？")) {
             db.transaction("logs", "readwrite").objectStore("logs").delete(id).onsuccess = renderAttendance;
         }
     }
@@ -534,34 +495,28 @@
         if(!name) return;
         db.transaction("members", "readwrite").objectStore("members").put({name}).onsuccess = () => {
             document.getElementById('new-member').value = "";
-            renderSettingsMembers();
-            renderMemberSelector();
+            renderSettingsMembers(); renderMemberSelector();
         };
     }
 
     function renderMemberSelector() {
         db.transaction("members", "readonly").objectStore("members").getAll().onsuccess = (e) => {
-            const list = document.getElementById('member-selector');
-            list.innerHTML = e.target.result.map(m => `<div class="member-chip" onclick="this.classList.toggle('selected')">${m.name}</div>`).join('');
+            document.getElementById('member-selector').innerHTML = e.target.result.map(m => `<div class="member-chip" onclick="this.classList.toggle('selected')">${m.name}</div>`).join('');
         };
     }
 
     function renderSettingsMembers() {
         db.transaction("members", "readonly").objectStore("members").getAll().onsuccess = (e) => {
             document.getElementById('settings-member-list').innerHTML = e.target.result.map(m => `
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px; background:#f5f5f7; padding:12px; border-radius:10px; align-items:center;">
-                    <span>${m.name}</span>
-                    <button class="action-btn btn-del" onclick="deleteMember('${m.name}')">削除</button>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px; background:#f5f5f7; padding:10px; border-radius:10px; align-items:center;">
+                    <span>${m.name}</span><button class="action-btn btn-del" onclick="deleteMember('${m.name}')">削除</button>
                 </div>`).join('');
         };
     }
 
     function deleteMember(name) {
-        if(confirm(name + " を名簿から削除しますか？")) {
-            db.transaction("members", "readwrite").objectStore("members").delete(name).onsuccess = () => {
-                renderSettingsMembers();
-                renderMemberSelector();
-            };
+        if(confirm(name + " を削除しますか？")) {
+            db.transaction("members", "readwrite").objectStore("members").delete(name).onsuccess = () => { renderSettingsMembers(); renderMemberSelector(); };
         }
     }
 
@@ -636,7 +591,7 @@
                     const tx = db.transaction(s, "readwrite");
                     d[s].forEach(item => tx.objectStore(s).put(item));
                 });
-                alert("データの復元が完了しました。");
+                alert("復元完了！再読み込みします。");
                 location.reload();
             };
             reader.readAsText(e.target.files[0]);
@@ -646,9 +601,8 @@
 
     function showToast(m) {
         const t = document.getElementById('toast');
-        t.innerText = m;
-        t.style.opacity = 1;
-        setTimeout(() => t.style.opacity = 0, 2000);
+        t.innerText = m; t.style.opacity = 1;
+        setTimeout(() => t.style.opacity = 0, 2500);
     }
 
     function clearEntryForm() {

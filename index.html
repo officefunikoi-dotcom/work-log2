@@ -72,15 +72,16 @@
         .btn-secondary { background: #e8e8ed; color: var(--apple-text); }
         .btn-danger { background: var(--apple-red); color: white; padding: 8px; font-size: 12px; border-radius: 8px; width: auto; }
 
-        /* A4 プレビュー表示の最適化 */
+        /* A4 プレビュー表示の最適化（スマホ対応） */
         .preview-wrapper { 
             width: 100%; 
-            overflow-x: auto; 
-            background: #525659; /* PDFビューアーのような背景色 */
-            padding: 40px 10px; 
+            background: #525659; 
+            padding: 20px 0; 
             display: flex; 
             justify-content: center; 
             align-items: flex-start;
+            overflow: hidden; /* はみ出し防止 */
+            border-radius: var(--apple-radius);
         }
         .a4-page { 
             width: 210mm; 
@@ -248,22 +249,20 @@
         window.addEventListener('resize', adjustA4Scale);
     }
 
+    // A4プレビューを画面幅に合わせてスケーリングするロジック
     function adjustA4Scale() {
         const wrapper = document.querySelector('.preview-wrapper');
         if(!wrapper || wrapper.offsetParent === null) return;
         
-        const containerWidth = wrapper.offsetWidth - 40;
-        const a4WidthInPx = 210 * 3.7795275591; // mm to px
+        const containerWidth = wrapper.offsetWidth;
+        const a4WidthInPx = 210 * 3.7795; // 210mmをpxに変換
         const scale = containerWidth / a4WidthInPx;
         
         document.querySelectorAll('.a4-page').forEach(page => {
-            if (scale < 1) {
-                page.style.transform = `scale(${scale})`;
-                page.parentElement.style.height = (page.offsetHeight * scale) + "px";
-            } else {
-                page.style.transform = "none";
-                page.parentElement.style.height = "auto";
-            }
+            // スマホなら画面幅に合わせて縮小、PCなら原寸または少し縮小
+            const finalScale = scale < 1 ? scale : (containerWidth < a4WidthInPx + 40 ? scale * 0.95 : 1);
+            page.style.transform = `scale(${finalScale})`;
+            page.parentElement.style.height = (page.offsetHeight * finalScale) + "px";
         });
     }
 
@@ -276,6 +275,7 @@
         if(p === 'invoice') renderInvoice();
         if(p === 'settings') renderSettingsMembers();
         
+        // 描画後にスケーリングを適用
         setTimeout(adjustA4Scale, 150);
     }
 
@@ -352,7 +352,7 @@
     function renderAttendance() {
         const m = document.getElementById('att-month').value;
         const [y, mm] = m.split('-');
-        document.getElementById('att-title').innerText = `出勤簿　${y}年${parseInt(mm)}月`;
+        document.getElementById('att-title').innerText = `${y}年${parseInt(mm)}月 出勤記録`;
 
         db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => {
             const logs = e.target.result.filter(l => l.month === m).sort((a,b) => a.date.localeCompare(b.date));
@@ -362,12 +362,12 @@
                     <tr>
                         <td style="text-align:center">${l.date.substring(5).replace('-','/')}</td>
                         <td>${l.site}</td>
-                        <td>${[myName, ...l.members.map(getLastName)].join(' ')} (${l.members.length + 1}名)</td>
+                        <td>${[myName, ...l.members.map(getLastName)].join(' ')}<br>(${l.members.length + 1}名)</td>
                         <td style="text-align:center">${l.type === '残業' ? l.ot+'h' : l.type.substring(0,2)}</td>
                         <td style="font-size:10px">${l.memo}</td>
                         <td class="no-print" style="text-align:center">
-                            <button onclick="editLog(${l.id})" style="color:blue; border:none; background:none; font-size:11px; margin-right:5px;">修正</button>
-                            <button onclick="deleteLog(${l.id})" style="color:red; border:none; background:none; font-size:11px;">削除</button>
+                            <button onclick="editLog(${l.id})" style="color:blue; border:none; background:none; font-size:11px; margin-right:5px; padding:4px;">修正</button>
+                            <button onclick="deleteLog(${l.id})" style="color:red; border:none; background:none; font-size:11px; padding:4px;">削除</button>
                         </td>
                     </tr>`).join('');
                 adjustA4Scale();
@@ -392,7 +392,6 @@
                 let subTotalExTax = 0;
                 
                 document.getElementById('inv-body').innerHTML = logs.map(l => {
-                    // 各行の金額（税込）から税抜きを算出
                     const lineExTax = Math.floor(l.total / 1.1);
                     subTotalExTax += lineExTax;
                     

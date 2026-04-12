@@ -17,12 +17,13 @@
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro JP", sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro JP", "Hiragino Kaku Gothic ProN", sans-serif;
             background-color: var(--apple-bg);
             color: var(--apple-text);
             margin: 0;
             padding-bottom: 100px;
             overflow-x: hidden;
+            line-height: 1.47;
         }
 
         /* ナビゲーション */
@@ -36,90 +37,85 @@
         }
         nav button {
             background: none; border: none; font-size: 13px; font-weight: 500;
-            color: var(--apple-sub); cursor: pointer;
+            color: var(--apple-sub); cursor: pointer; padding: 8px 0;
         }
         nav button.active { color: var(--apple-text); font-weight: 700; border-bottom: 2px solid var(--apple-text); }
 
         .container { max-width: 800px; margin: 0 auto; padding: 16px; }
         
         .card {
-            background: var(--apple-card); padding: 24px;
-            border-radius: var(--apple-radius); margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            background: var(--apple-card); padding: 20px;
+            border-radius: var(--apple-radius); margin-bottom: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
 
-        h2 { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 24px; }
+        h2, h3 { font-weight: 700; text-align: center; margin-bottom: 20px; }
+        h2 { font-size: 22px; }
+        h3 { font-size: 18px; text-align: left; border-left: 4px solid var(--apple-blue); padding-left: 10px; }
 
-        /* A4書類プレビュー (iPhone対応) */
-        .a4-wrapper {
-            width: 100%;
-            display: flex;
-            justify-content: center;
-            overflow: hidden;
-            background: #e8e8ed;
-            padding: 10px 0;
-            border-radius: var(--apple-radius);
-        }
-
-        .a4-page {
-            width: 210mm;
-            min-height: 297mm;
-            padding: 15mm;
-            background: white;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            transform-origin: top center;
-            color: #000;
-            flex-shrink: 0;
-        }
-
-        @media screen and (max-width: 768px) {
-            .a4-page {
-                transform: scale(calc(96vw / 210mm));
-                margin-bottom: calc(-297mm * (1 - (96vw / 210mm)));
-            }
-        }
-
-        /* フォーム部品 */
-        .form-group { margin-bottom: 18px; }
-        label { display: block; font-size: 14px; font-weight: 600; color: var(--apple-sub); margin-bottom: 8px; }
+        /* 入力フォーム */
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-size: 14px; font-weight: 600; color: var(--apple-sub); margin-bottom: 6px; }
         input, select, textarea {
-            width: 100%; padding: 14px; border-radius: 10px; border: 1px solid #d2d2d7;
-            font-size: 16px; background: #fff; appearance: none;
+            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #d2d2d7;
+            font-size: 16px; background: #fff; appearance: none; -webkit-appearance: none;
         }
+        input[type="checkbox"] { width: 24px; height: 24px; appearance: checkbox; -webkit-appearance: checkbox; cursor: pointer; }
 
-        .member-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .member-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px; }
         .member-chip {
-            padding: 10px 16px; border-radius: 20px; background: #f0f0f2;
-            font-size: 14px; cursor: pointer; transition: 0.2s;
+            padding: 8px 14px; border-radius: 18px; background: #f0f0f2;
+            font-size: 14px; cursor: pointer; transition: 0.2s; border: 1px solid transparent;
         }
         .member-chip.selected { background: var(--apple-blue); color: #fff; font-weight: 600; }
 
         .btn {
-            display: block; width: 100%; padding: 18px; border-radius: var(--apple-radius);
-            font-size: 17px; font-weight: 600; text-align: center; border: none; cursor: pointer;
+            display: block; width: 100%; padding: 16px; border-radius: var(--apple-radius);
+            font-size: 16px; font-weight: 600; text-align: center; border: none; cursor: pointer;
+            transition: opacity 0.2s;
         }
+        .btn:active { opacity: 0.7; }
         .btn-primary { background: var(--apple-blue); color: white; }
-        .btn-secondary { background: #e8e8ed; color: var(--apple-text); margin-top: 12px; }
-        .btn-danger { background: #ff3b30; color: white; padding: 6px 10px; font-size: 11px; border-radius: 6px; }
+        .btn-secondary { background: #e8e8ed; color: var(--apple-text); margin-top: 10px; }
+        .btn-danger { background: #ff3b30; color: white; padding: 6px 10px; font-size: 11px; border-radius: 6px; width: auto; }
 
-        /* A4内テーブル */
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; table-layout: fixed; }
-        th, td { border: 1px solid #000; padding: 8px; font-size: 11px; text-align: left; word-wrap: break-word; }
-        th { background: #f2f2f2; font-weight: bold; }
+        /* A4書類プレビュー */
+        .a4-wrapper {
+            width: 100%; display: flex; justify-content: center; overflow-x: auto;
+            background: #e8e8ed; padding: 10px; border-radius: var(--apple-radius);
+        }
+        .a4-page {
+            width: 210mm; min-height: 297mm; padding: 15mm; background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1); transform-origin: top center; color: #000; flex-shrink: 0;
+        }
 
-        .invoice-title { font-size: 28px; text-align: center; border-bottom: 3px solid #000; padding-bottom: 10px; margin-bottom: 30px; letter-spacing: 15px; font-weight: bold; }
-        .total-box { font-size: 20px; font-weight: bold; border-bottom: 4px double #000; padding: 8px 5px; margin: 25px 0; display: flex; justify-content: space-between; }
-        .bank-info { border: 1px solid #000; padding: 10px; margin-top: 20px; font-size: 12px; white-space: pre-wrap; width: fit-content; min-width: 250px; }
+        @media screen and (max-width: 768px) {
+            .a4-page {
+                transform: scale(calc((100vw - 52px) / 210)); /* iPhone幅に合わせる */
+                margin-bottom: calc(-297mm * (1 - ((100vw - 52px) / 210)));
+            }
+        }
 
-        #toast { position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 12px 24px; border-radius: 30px; opacity: 0; transition: 0.4s; z-index: 2000; pointer-events: none; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+        th, td { border: 1px solid #000; padding: 6px; font-size: 11px; text-align: left; word-wrap: break-word; }
+        th { background: #f2f2f2; }
+
+        .invoice-title { font-size: 26px; text-align: center; border-bottom: 3px solid #000; padding-bottom: 5px; margin-bottom: 20px; letter-spacing: 12px; font-weight: bold; }
+        .total-box { font-size: 18px; font-weight: bold; border-bottom: 4px double #000; padding: 5px; margin: 20px 0; display: flex; justify-content: space-between; }
+        .bank-info { border: 1px solid #000; padding: 8px; margin-top: 15px; font-size: 11px; white-space: pre-wrap; width: fit-content; min-width: 220px; }
+
+        #toast { 
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%); 
+            background: rgba(0,0,0,0.8); color: #fff; padding: 10px 20px; 
+            border-radius: 20px; opacity: 0; transition: 0.3s; z-index: 3000; pointer-events: none; font-size: 14px;
+        }
         .hidden { display: none; }
 
         @media print {
             nav, .no-print, .btn, #toast, .card { display: none !important; }
             body { background: #fff; padding: 0; }
-            @page { margin: 0; }
             .a4-wrapper { display: block; background: none; padding: 0; }
-            .a4-page { width: 100%; box-shadow: none; transform: none !important; margin: 0; }
+            .a4-page { width: 100%; box-shadow: none; transform: none !important; margin: 0; padding: 10mm; }
         }
     </style>
 </head>
@@ -150,11 +146,16 @@
                 </select>
             </div>
             <div id="overtime-wrap" class="form-group" style="display:none"><label>残業時間</label><input type="number" id="overtime-hours" step="0.5" value="0"></div>
-            <div class="form-group"><label>基本日当 (税込)</label><input type="number" id="base-wage"></div>
-            <div class="form-group"><label style="display:flex; align-items:center; gap:10px; cursor:pointer;"><input type="checkbox" id="is-trip" style="width:22px;height:22px;"> 出張手当を追加</label></div>
+            <div class="form-group"><label>基本日当 (税込)</label><input type="number" id="base-wage" placeholder="18000"></div>
+            <div class="form-group">
+                <label style="display:flex; align-items:center; gap:12px; cursor:pointer; padding:10px 0;">
+                    <input type="checkbox" id="is-trip">
+                    <span>出張手当を追加</span>
+                </label>
+            </div>
             <div class="form-group"><label>経費 (非課税)</label><input type="number" id="expenses" value="0"></div>
-            <div class="form-group"><label>メモ</label><textarea id="memo" rows="2"></textarea></div>
-            <button class="btn btn-primary" onclick="confirmSave()">保存してLINEコピー</button>
+            <div class="form-group"><label>メモ</label><textarea id="memo" rows="2" placeholder="備考など"></textarea></div>
+            <button class="btn btn-primary" onclick="confirmSave()">登録してLINEコピー</button>
             <button id="cancel-edit" class="btn btn-secondary" style="display:none" onclick="clearEntryForm()">キャンセル</button>
         </div>
     </section>
@@ -165,7 +166,7 @@
         </div>
         <div class="a4-wrapper">
             <div class="a4-page">
-                <h2 id="att-title" style="margin-top:0; font-size:20px; text-align:center;"></h2>
+                <h2 id="att-title" style="margin-top:0; font-size:20px;"></h2>
                 <table>
                     <thead><tr><th style="width:14%">日付</th><th style="width:25%">現場名</th><th style="width:25%">人員</th><th style="width:14%">区分</th><th>メモ</th><th class="no-print" style="width:55px">操作</th></tr></thead>
                     <tbody id="att-body"></tbody>
@@ -218,29 +219,25 @@
             <div id="settings-member-list"></div>
         </div>
         <div class="card">
-            <h3>日当・手当設定</h3>
+            <h3>金額・手当設定</h3>
             <div class="form-group"><label>標準日当 (税込)</label><input type="number" id="set-base-wage" onchange="saveConfig()"></div>
             <div class="form-group"><label>出張手当 (税込)</label><input type="number" id="set-trip-pay" onchange="saveConfig()"></div>
         </div>
         <div class="card">
-            <h3>請求先情報</h3>
-            <div class="form-group"><label>会社名</label><input type="text" id="set-c-name" onchange="saveConfig()"></div>
-            <div class="form-group"><label>住所</label><input type="text" id="set-c-addr" onchange="saveConfig()"></div>
-        </div>
-        <div class="card">
-            <h3>請求元情報 (自分)</h3>
-            <div class="form-group"><label>氏名</label><input type="text" id="set-m-name" onchange="saveConfig()"></div>
-            <div class="form-group"><label>住所</label><input type="text" id="set-m-addr" onchange="saveConfig()"></div>
+            <h3>請求情報設定</h3>
+            <div class="form-group"><label>請求先 会社名</label><input type="text" id="set-c-name" onchange="saveConfig()"></div>
+            <div class="form-group"><label>請求先 住所</label><input type="text" id="set-c-addr" onchange="saveConfig()"></div>
+            <hr style="border:0; border-top:1px solid #eee; margin:20px 0;">
+            <div class="form-group"><label>請求元 氏名</label><input type="text" id="set-m-name" onchange="saveConfig()"></div>
+            <div class="form-group"><label>請求元 住所</label><input type="text" id="set-m-addr" onchange="saveConfig()"></div>
             <div class="form-group"><label>電話番号</label><input type="text" id="set-m-tel" onchange="saveConfig()"></div>
+            <div class="form-group"><label>振込先</label><textarea id="set-bank" rows="3" onchange="saveConfig()"></textarea></div>
         </div>
         <div class="card">
-            <h3>振込先</h3>
-            <textarea id="set-bank" rows="3" onchange="saveConfig()" placeholder="銀行名・支店・口座番号など"></textarea>
-        </div>
-        <div class="card">
-            <h3>バックアップ (機種変更など)</h3>
-            <button class="btn btn-primary" onclick="exportData()">データを保存(書き出し)</button>
-            <button class="btn btn-secondary" onclick="importData()">データを復元(読み込み)</button>
+            <h3>データ管理</h3>
+            <p style="font-size:12px; color:var(--apple-sub);">機種変更時は「書き出し」したファイルを新しい端末で「読み込み」してください。</p>
+            <button class="btn btn-primary" onclick="exportData()">全データを書き出す (保存)</button>
+            <button class="btn btn-secondary" onclick="importData()">データを読み込む (復元)</button>
         </div>
     </section>
 </div>
@@ -249,7 +246,8 @@
 
 <script>
     let db;
-    const request = indexedDB.open("FieldProA4_Master_V8", 1);
+    const DB_NAME = "FieldProMaster_V10";
+    const request = indexedDB.open(DB_NAME, 1);
 
     request.onupgradeneeded = (e) => {
         db = e.target.result;
@@ -284,17 +282,19 @@
         if(p === 'settings') renderSettingsMembers();
     }
 
-    function getLastName(fullName) {
-        if(!fullName) return "";
-        return fullName.trim().split(/[ 　]/)[0];
+    function getLastName(name) {
+        if(!name) return "";
+        return name.trim().split(/[ 　]/)[0];
     }
 
     function toggleOvertime() {
         document.getElementById('overtime-wrap').style.display = (document.getElementById('work-type').value === '残業') ? 'block' : 'none';
     }
 
-    function confirmSave() { 
-        if(confirm("登録しますか？")) saveLog(); 
+    function confirmSave() {
+        if(confirm("この内容で登録し、報告文をコピーしますか？")) {
+            saveLog();
+        }
     }
 
     async function saveLog() {
@@ -314,6 +314,7 @@
         const conf = await new Promise(r => db.transaction("config").objectStore("config").get("main").onsuccess = e => r(e.target.result?.value || {}));
         const tripAmount = tripCheck ? parseInt(conf.tripPay || 1000) : 0;
 
+        // 計算
         let total = (type === '移動日50') ? base * 0.5 : base;
         if(type === '残業') total += Math.floor((base / 8) * 1.25 * ot);
         total += exp + tripAmount;
@@ -324,7 +325,7 @@
         db.transaction("logs", "readwrite").objectStore("logs").put(data).onsuccess = () => {
             copyToLine(data, conf.mName || "自分");
             clearEntryForm();
-            showToast("保存完了 & LINE用コピー");
+            showToast("登録完了 ＆ コピーしました");
             updateSiteDatalist();
         };
     }
@@ -336,17 +337,22 @@
         const count = d.members.length + 1;
         const msg = `${dateStr} ${d.site} ${membersStr} ${count}名 ${d.type === '残業' ? '残業'+d.ot+'時間' : d.type}です。`;
         
-        // クリップボードコピー実行
-        const area = document.createElement("textarea");
-        area.value = msg; document.body.appendChild(area);
-        area.select(); document.execCommand("copy");
-        document.body.removeChild(area);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(msg);
+        } else {
+            const textArea = document.createElement("textarea");
+            textArea.value = msg;
+            document.body.appendChild(textArea);
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+        }
     }
 
     function renderAttendance() {
         const m = document.getElementById('att-month').value;
         const [y, mm] = m.split('-');
-        document.getElementById('att-title').innerText = `出勤簿　${y}年${parseInt(mm)}月`;
+        document.getElementById('att-title').innerText = `${y}年${parseInt(mm)}月 出勤記録`;
 
         db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (e) => {
             const logs = e.target.result.filter(l => l.month === m).sort((a,b) => a.date.localeCompare(b.date));
@@ -358,10 +364,10 @@
                         <td>${l.site}</td>
                         <td>${[myName, ...l.members.map(getLastName)].join(' ')} (${l.members.length + 1}名)</td>
                         <td>${l.type === '残業' ? '残業'+l.ot+'h' : l.type}</td>
-                        <td style="font-size:9px">${l.memo}</td>
+                        <td>${l.memo}</td>
                         <td class="no-print" style="text-align:center">
-                            <button onclick="editLog(${l.id})" style="color:var(--apple-blue); border:none; background:none; font-size:10px; cursor:pointer; display:block; margin:auto;">修正</button>
-                            <button onclick="deleteLog(${l.id})" style="color:#ff3b30; border:none; background:none; font-size:10px; cursor:pointer; display:block; margin:auto; margin-top:5px;">削除</button>
+                            <button onclick="editLog(${l.id})" style="color:var(--apple-blue); border:none; background:none; font-size:11px; padding:4px;">修正</button>
+                            <button onclick="deleteLog(${l.id})" style="color:#ff3b30; border:none; background:none; font-size:11px; padding:4px;">削除</button>
                         </td>
                     </tr>`).join('');
             };
@@ -372,9 +378,9 @@
         const m = document.getElementById('inv-month').value;
         db.transaction("config", "readonly").objectStore("config").get("main").onsuccess = (ec) => {
             const c = ec.target.result?.value || {};
-            document.getElementById('disp-c-name').innerText = (c.cName || "") + " 御中";
+            document.getElementById('disp-c-name').innerText = (c.cName || "（請求先未設定）") + " 御中";
             document.getElementById('disp-c-addr').innerText = c.cAddr || "";
-            document.getElementById('disp-m-name').innerText = c.mName || "";
+            document.getElementById('disp-m-name').innerText = c.mName || "（自分の氏名未設定）";
             document.getElementById('disp-m-addr').innerText = c.mAddr || "";
             document.getElementById('disp-m-tel').innerText = c.mTel || "";
             document.getElementById('disp-bank').innerText = "【お振込先】\n" + (c.bank || "");
@@ -382,19 +388,15 @@
 
             db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (el) => {
                 const logs = el.target.result.filter(l => l.month === m).sort((a,b) => a.date.localeCompare(b.date));
-                let subTotal = 0;
-                let gTotal = 0;
+                let subTotal = 0; let gTotal = 0;
 
                 document.getElementById('inv-body').innerHTML = logs.map(l => {
                     const taxable = l.total - l.exp;
                     const lineSub = Math.ceil(taxable / 1.1) + l.exp;
-                    subTotal += lineSub;
-                    gTotal += l.total;
-
+                    subTotal += lineSub; gTotal += l.total;
                     let biko = l.type + (l.ot > 0 ? `(${l.ot}h)` : "");
                     if(l.tripAmount > 0) biko += " +出張";
                     if(l.exp > 0) biko += " +経費";
-                    
                     return `<tr><td>${l.date.replace(/-/g,'/')}</td><td>${l.site}</td><td>${biko}</td><td style="text-align:right">¥${lineSub.toLocaleString()}</td></tr>`;
                 }).join('');
 
@@ -425,6 +427,7 @@
             document.querySelectorAll('#member-selector .member-chip').forEach(el => {
                 el.classList.toggle('selected', l.members.includes(el.innerText));
             });
+            window.scrollTo(0,0);
         };
     }
 
@@ -474,6 +477,7 @@
             bank: document.getElementById('set-bank').value
         };
         db.transaction("config", "readwrite").objectStore("config").put({ key: "main", value: conf });
+        showToast("設定を保存しました");
     }
 
     async function loadConfig() {
@@ -515,7 +519,7 @@
                     const blob = new Blob([JSON.stringify(data)], {type: "application/json"});
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement("a");
-                    a.href = url; a.download = `FieldPro_Backup_${new Date().toLocaleDateString()}.json`;
+                    a.href = url; a.download = `GenbaPro_Backup_${new Date().toISOString().split('T')[0]}.json`;
                     a.click();
                 }
             };
@@ -534,7 +538,7 @@
                     const tx = db.transaction(s, "readwrite");
                     data[s].forEach(item => tx.objectStore(s).put(item));
                 });
-                alert("復元が完了しました。再読み込みします。");
+                alert("データの復元が完了しました。アプリを再起動します。");
                 location.reload();
             };
             reader.readAsText(file);
@@ -545,7 +549,7 @@
     function showToast(m) {
         const t = document.getElementById('toast');
         t.innerText = m; t.style.opacity = 1;
-        setTimeout(() => t.style.opacity = 0, 2000);
+        setTimeout(() => t.style.opacity = 0, 2500);
     }
 
     function clearEntryForm() {

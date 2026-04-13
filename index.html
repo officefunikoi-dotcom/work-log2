@@ -178,8 +178,16 @@
 
     <section id="page-invoice" class="hidden">
         <div class="card no-print">
-            <label>請求月を選択</label>
-            <input type="month" id="inv-month" onchange="renderInvoice()">
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label>請求月を選択</label>
+                    <input type="month" id="inv-month" onchange="renderInvoice()">
+                </div>
+                <div style="flex: 1;">
+                    <label>発行日を指定</label>
+                    <input type="date" id="inv-issue-date" onchange="renderInvoice()">
+                </div>
+            </div>
         </div>
         <div class="preview-wrapper" id="inv-wrapper">
             <div class="a4-page" id="inv-page">
@@ -211,7 +219,6 @@
                     <tfoot>
                         <tr><td colspan="3" style="text-align:right; font-weight:bold; padding-right:15px;">合計 (税込)</td><td id="inv-subtotal" style="text-align:right; font-weight:bold;"></td></tr>
                         <tr><td colspan="3" style="text-align:right; font-weight:bold; padding-right:15px;">(10%対象)</td><td id="inv-tax" style="text-align:right; font-weight:bold;"></td></tr>
-                        <tr><td colspan="3" style="text-align:right; font-weight:bold; background:#f2f2f2; padding-right:15px;">合計 (税込)</td><td id="inv-grand-total" style="text-align:right; font-weight:bold; background:#f2f2f2;"></td></tr>
                     </tfoot>
                 </table>
                 <div class="bank-info" id="disp-bank"></div>
@@ -273,7 +280,9 @@
 
     function init() {
         const now = new Date();
-        document.getElementById('date').value = now.toISOString().split('T')[0];
+        const today = now.toISOString().split('T')[0];
+        document.getElementById('date').value = today;
+        document.getElementById('inv-issue-date').value = today;
         document.getElementById('att-month').value = now.toISOString().substring(0, 7);
         document.getElementById('inv-month').value = now.toISOString().substring(0, 7);
         renderMemberSelector();
@@ -395,6 +404,8 @@
 
     function renderInvoice() {
         const m = document.getElementById('inv-month').value;
+        const issueDate = document.getElementById('inv-issue-date').value || new Date().toISOString().split('T')[0];
+        
         db.transaction("config", "readonly").objectStore("config").get("main").onsuccess = (ec) => {
             const c = ec.target.result?.value || {};
             document.getElementById('disp-c-name').innerText = (c.cName || "") + " 御中";
@@ -403,7 +414,7 @@
             document.getElementById('disp-m-addr').innerText = c.mAddr || "";
             document.getElementById('disp-m-tel').innerText = c.mTel || "";
             document.getElementById('disp-bank').innerText = "【お振込先】\n" + (c.bank || "");
-            document.getElementById('disp-date').innerText = "発行日: " + new Date().toLocaleDateString();
+            document.getElementById('disp-date').innerText = "発行日: " + issueDate.replace(/-/g, '/');
 
             db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (el) => {
                 const logs = el.target.result.filter(l => l.month === m).sort((a,b) => a.date.localeCompare(b.date));
@@ -425,14 +436,12 @@
                     </tr>`;
                 }).join('');
 
-                // 税込総額から小計(税抜相当)と消費税を逆算
                 const subTotalExTax = Math.round(grandTotal / 1.1);
                 const tax = grandTotal - subTotalExTax;
 
                 document.getElementById('disp-total').innerText = "¥ " + grandTotal.toLocaleString() + " -";
-                document.getElementById('inv-subtotal').innerText = "¥" + grandTotal.toLocaleString(); // 合計(税込)として表示
-                document.getElementById('inv-tax').innerText = "¥" + tax.toLocaleString(); // (10%対象)として表示
-                document.getElementById('inv-grand-total').innerText = "¥" + grandTotal.toLocaleString();
+                document.getElementById('inv-subtotal').innerText = "¥" + grandTotal.toLocaleString(); 
+                document.getElementById('inv-tax').innerText = "¥" + tax.toLocaleString();
                 
                 adjustA4Scale();
             };

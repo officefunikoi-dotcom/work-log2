@@ -183,7 +183,7 @@
         </div>
         <div class="preview-wrapper" id="inv-wrapper">
             <div class="a4-page" id="inv-page">
-                <div class="invoice-title">請求書</div>
+                <div class="invoice-title">御請求書</div>
                 <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom: 10px;">
                     <div>
                         <div id="disp-c-addr" style="margin-bottom: 5px;"></div>
@@ -204,13 +204,13 @@
                             <th style="width:15%">日付</th>
                             <th>現場名・摘要</th>
                             <th style="width:15%">備考</th>
-                            <th style="width:22%">金額 (税抜)</th>
+                            <th style="width:22%">金額 (税込)</th>
                         </tr>
                     </thead>
                     <tbody id="inv-body"></tbody>
                     <tfoot>
-                        <tr><td colspan="3" style="text-align:right; font-weight:bold; padding-right:15px;">小計 (税抜)</td><td id="inv-subtotal" style="text-align:right; font-weight:bold;"></td></tr>
-                        <tr><td colspan="3" style="text-align:right; font-weight:bold; padding-right:15px;">消費税 (10%)</td><td id="inv-tax" style="text-align:right; font-weight:bold;"></td></tr>
+                        <tr><td colspan="3" style="text-align:right; font-weight:bold; padding-right:15px;">合計 (税込)</td><td id="inv-subtotal" style="text-align:right; font-weight:bold;"></td></tr>
+                        <tr><td colspan="3" style="text-align:right; font-weight:bold; padding-right:15px;">(10%対象)</td><td id="inv-tax" style="text-align:right; font-weight:bold;"></td></tr>
                         <tr><td colspan="3" style="text-align:right; font-weight:bold; background:#f2f2f2; padding-right:15px;">合計 (税込)</td><td id="inv-grand-total" style="text-align:right; font-weight:bold; background:#f2f2f2;"></td></tr>
                     </tfoot>
                 </table>
@@ -408,13 +408,10 @@
             db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (el) => {
                 const logs = el.target.result.filter(l => l.month === m).sort((a,b) => a.date.localeCompare(b.date));
                 
-                let grandTotal = 0; // 税込の総計
+                let grandTotal = 0; 
                 
                 document.getElementById('inv-body').innerHTML = logs.map(l => {
                     grandTotal += l.total;
-                    
-                    // 明細行の表示を税抜きにする
-                    const lineExTax = Math.round(l.total / 1.1);
                     
                     let biko = l.type + (l.ot > 0 ? `(${l.ot}h)` : "");
                     if(l.tripAmount > 0) biko += " +出張";
@@ -424,17 +421,17 @@
                         <td style="text-align:center">${l.date.replace(/-/g,'/')}</td>
                         <td>${l.site}</td>
                         <td style="text-align:center">${biko}</td>
-                        <td style="text-align:right">¥${lineExTax.toLocaleString()}</td>
+                        <td style="text-align:right">¥${l.total.toLocaleString()}</td>
                     </tr>`;
                 }).join('');
 
-                // 税込総額から小計(税抜)と消費税を逆算（ピッタリ合うように計算）
+                // 税込総額から小計(税抜相当)と消費税を逆算
                 const subTotalExTax = Math.round(grandTotal / 1.1);
                 const tax = grandTotal - subTotalExTax;
 
                 document.getElementById('disp-total').innerText = "¥ " + grandTotal.toLocaleString() + " -";
-                document.getElementById('inv-subtotal').innerText = "¥" + subTotalExTax.toLocaleString();
-                document.getElementById('inv-tax').innerText = "¥" + tax.toLocaleString();
+                document.getElementById('inv-subtotal').innerText = "¥" + grandTotal.toLocaleString(); // 合計(税込)として表示
+                document.getElementById('inv-tax').innerText = "¥" + tax.toLocaleString(); // (10%対象)として表示
                 document.getElementById('inv-grand-total').innerText = "¥" + grandTotal.toLocaleString();
                 
                 adjustA4Scale();

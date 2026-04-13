@@ -25,10 +25,10 @@
             line-height: 1.47;
         }
 
-        /* 印刷設定: URLやヘッダーを完全に排除 */
+        /* 印刷設定 */
         @media print {
             @page { margin: 0; }
-            nav, .no-print, .btn, #toast, .card { display: none !important; }
+            nav, .no-print, .btn, #toast, .card, .accordion-header { display: none !important; }
             body { background: #fff; padding: 0; }
             .preview-wrapper { display: block !important; background: none !important; padding: 0 !important; overflow: visible !important; height: auto !important; }
             .a4-page { 
@@ -61,6 +61,14 @@
         label { display: block; font-size: 13px; font-weight: 600; color: var(--apple-sub); margin-bottom: 5px; }
         input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #d2d2d7; font-size: 16px; background: #fff; appearance: none; }
         
+        /* アコーディオン */
+        .accordion { border-radius: var(--apple-radius); overflow: hidden; margin-bottom: 12px; border: 1px solid #d2d2d7; }
+        .accordion-header { background: #fff; padding: 15px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+        .accordion-content { background: #fff; padding: 15px; display: none; }
+        .accordion.open .accordion-content { display: block; }
+        .accordion-header::after { content: '＋'; font-size: 12px; color: var(--apple-sub); }
+        .accordion.open .accordion-header::after { content: '－'; }
+
         /* チェックボックス表示崩れ修正部分 */
         .checkbox-container { display: flex; align-items: center; gap: 10px; padding: 12px; background: #fff; border: 1px solid #d2d2d7; border-radius: 10px; }
         .checkbox-container input { width: 22px; height: 22px; appearance: checkbox; margin: 0; flex-shrink: 0; }
@@ -74,32 +82,14 @@
         .btn-secondary { background: #e8e8ed; color: var(--apple-text); }
         .btn-danger { background: var(--apple-red); color: white; padding: 8px; font-size: 12px; border-radius: 8px; width: auto; }
 
-        /* A4 プレビュー表示の最適化（スマホ対策） */
+        /* A4 プレビュー表示 */
         .preview-wrapper { 
-            width: 100%; 
-            background: #525659; 
-            padding: 10px 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start;
-            overflow: hidden; 
-            position: relative;
-            border-radius: var(--apple-radius);
-            min-height: 400px;
+            width: 100%; background: #525659; padding: 10px 0; display: flex; justify-content: center; align-items: flex-start;
+            overflow: hidden; position: relative; border-radius: var(--apple-radius); min-height: 400px;
         }
         .a4-page { 
-            width: 210mm; 
-            min-height: 297mm; 
-            padding: 15mm; 
-            background: white; 
-            flex-shrink: 0; 
-            transform-origin: top center; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
-            color: #000;
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%) scale(0.4); 
+            width: 210mm; min-height: 297mm; padding: 15mm; background: white; flex-shrink: 0; transform-origin: top center; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); color: #000; position: absolute; top: 10px; left: 50%; transform: translateX(-50%) scale(0.4); 
         }
 
         table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
@@ -179,14 +169,8 @@
     <section id="page-invoice" class="hidden">
         <div class="card no-print">
             <div style="display: flex; gap: 10px;">
-                <div style="flex: 1;">
-                    <label>請求月を選択</label>
-                    <input type="month" id="inv-month" onchange="renderInvoice()">
-                </div>
-                <div style="flex: 1;">
-                    <label>発行日を指定</label>
-                    <input type="date" id="inv-issue-date" onchange="renderInvoice()">
-                </div>
+                <div style="flex: 1;"><label>請求月を選択</label><input type="month" id="inv-month" onchange="renderInvoice()"></div>
+                <div style="flex: 1;"><label>発行日を指定</label><input type="date" id="inv-issue-date" onchange="renderInvoice()"></div>
             </div>
         </div>
         <div class="preview-wrapper" id="inv-wrapper">
@@ -194,6 +178,7 @@
                 <div class="invoice-title">御請求書</div>
                 <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom: 10px;">
                     <div>
+                        <div id="disp-c-zip" style="margin-bottom: 2px;"></div>
                         <div id="disp-c-addr" style="margin-bottom: 5px;"></div>
                         <div id="disp-c-name" style="font-size:18px; border-bottom:1px solid #000; min-width:250px; padding:5px 0; font-weight:bold; margin-bottom:10px;"></div>
                         <div>下記の通り、ご請求申し上げます。</div>
@@ -201,7 +186,8 @@
                     <div style="text-align:right">
                         <div id="disp-date"></div>
                         <div id="disp-m-name" style="font-weight:bold; font-size:16px; margin-top:10px;"></div>
-                        <div id="disp-m-addr" style="font-size:11px; margin-top:5px;"></div>
+                        <div id="disp-m-zip" style="font-size:11px; margin-top:5px;"></div>
+                        <div id="disp-m-addr" style="font-size:11px;"></div>
                         <div id="disp-m-tel" style="font-size:11px"></div>
                     </div>
                 </div>
@@ -228,29 +214,45 @@
     </section>
 
     <section id="page-settings" class="hidden">
-        <div class="card">
-            <h3>同行者名簿</h3>
-            <div style="display:flex; gap:8px; margin-bottom:10px;">
-                <input type="text" id="new-member" placeholder="氏名">
-                <button class="btn btn-primary" style="width:70px; padding:0;" onclick="addMember()">追加</button>
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">同行者名簿</div>
+            <div class="accordion-content">
+                <div style="display:flex; gap:8px; margin-bottom:10px;">
+                    <input type="text" id="new-member" placeholder="氏名">
+                    <button class="btn btn-primary" style="width:70px; padding:0;" onclick="addMember()">追加</button>
+                </div>
+                <div id="settings-member-list"></div>
             </div>
-            <div id="settings-member-list"></div>
         </div>
-        <div class="card">
-            <h3>金額・手当設定</h3>
-            <div class="form-group"><label>標準日当 (税込)</label><input type="number" id="set-base-wage" onchange="saveConfig()"></div>
-            <div class="form-group"><label>出張手当 (税込)</label><input type="number" id="set-trip-pay" onchange="saveConfig()"></div>
+
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">金額・手当設定</div>
+            <div class="accordion-content">
+                <div class="form-group"><label>標準日当 (税込)</label><input type="number" id="set-base-wage" onchange="saveConfig()"></div>
+                <div class="form-group"><label>出張手当 (税込)</label><input type="number" id="set-trip-pay" onchange="saveConfig()"></div>
+            </div>
         </div>
-        <div class="card">
-            <h3>請求情報設定</h3>
-            <div class="form-group"><label>請求先 会社名</label><input type="text" id="set-c-name" onchange="saveConfig()"></div>
-            <div class="form-group"><label>請求先 住所</label><input type="text" id="set-c-addr" onchange="saveConfig()"></div>
-            <hr style="margin:15px 0; border:none; border-top:1px solid #eee;">
-            <div class="form-group"><label>請求元 氏名/屋号</label><input type="text" id="set-m-name" onchange="saveConfig()"></div>
-            <div class="form-group"><label>請求元 住所</label><input type="text" id="set-m-addr" onchange="saveConfig()"></div>
-            <div class="form-group"><label>電話番号</label><input type="text" id="set-m-tel" onchange="saveConfig()"></div>
-            <div class="form-group"><label>振込先情報</label><textarea id="set-bank" rows="3" onchange="saveConfig()"></textarea></div>
+
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">請求先情報</div>
+            <div class="accordion-content">
+                <div class="form-group"><label>会社名</label><input type="text" id="set-c-name" onchange="saveConfig()"></div>
+                <div class="form-group"><label>郵便番号</label><input type="text" id="set-c-zip" placeholder="000-0000" onchange="saveConfig()"></div>
+                <div class="form-group"><label>住所</label><input type="text" id="set-c-addr" onchange="saveConfig()"></div>
+            </div>
         </div>
+
+        <div class="accordion">
+            <div class="accordion-header" onclick="toggleAccordion(this)">請求元情報</div>
+            <div class="accordion-content">
+                <div class="form-group"><label>氏名/屋号</label><input type="text" id="set-m-name" onchange="saveConfig()"></div>
+                <div class="form-group"><label>郵便番号</label><input type="text" id="set-m-zip" placeholder="000-0000" onchange="saveConfig()"></div>
+                <div class="form-group"><label>住所</label><input type="text" id="set-m-addr" onchange="saveConfig()"></div>
+                <div class="form-group"><label>電話番号</label><input type="text" id="set-m-tel" onchange="saveConfig()"></div>
+                <div class="form-group"><label>振込先情報</label><textarea id="set-bank" rows="3" onchange="saveConfig()"></textarea></div>
+            </div>
+        </div>
+
         <div class="card">
             <h3>データ管理</h3>
             <button class="btn btn-secondary" onclick="exportData()">全データをバックアップ保存</button>
@@ -288,6 +290,10 @@
         renderMemberSelector();
         updateSiteDatalist();
         window.addEventListener('resize', adjustA4Scale);
+    }
+
+    function toggleAccordion(header) {
+        header.parentElement.classList.toggle('open');
     }
 
     function adjustA4Scale() {
@@ -409,8 +415,10 @@
         db.transaction("config", "readonly").objectStore("config").get("main").onsuccess = (ec) => {
             const c = ec.target.result?.value || {};
             document.getElementById('disp-c-name').innerText = (c.cName || "") + " 御中";
+            document.getElementById('disp-c-zip').innerText = c.cZip ? "〒" + c.cZip : "";
             document.getElementById('disp-c-addr').innerText = c.cAddr || "";
             document.getElementById('disp-m-name').innerText = c.mName || "";
+            document.getElementById('disp-m-zip').innerText = c.mZip ? "〒" + c.mZip : "";
             document.getElementById('disp-m-addr').innerText = c.mAddr || "";
             document.getElementById('disp-m-tel').innerText = c.mTel || "";
             document.getElementById('disp-bank').innerText = "【お振込先】\n" + (c.bank || "");
@@ -418,12 +426,10 @@
 
             db.transaction("logs", "readonly").objectStore("logs").getAll().onsuccess = (el) => {
                 const logs = el.target.result.filter(l => l.month === m).sort((a,b) => a.date.localeCompare(b.date));
-                
                 let grandTotal = 0; 
                 
                 document.getElementById('inv-body').innerHTML = logs.map(l => {
                     grandTotal += l.total;
-                    
                     let biko = l.type + (l.ot > 0 ? `(${l.ot}h)` : "");
                     if(l.tripAmount > 0) biko += " +出張";
                     if(l.exp > 0) biko += " +経費";
@@ -436,8 +442,8 @@
                     </tr>`;
                 }).join('');
 
-                const subTotalExTax = Math.round(grandTotal / 1.1);
-                const tax = grandTotal - subTotalExTax;
+                // 税込合計額の10%を消費税として計算
+                const tax = Math.floor(grandTotal * 0.1);
 
                 document.getElementById('disp-total').innerText = "¥ " + grandTotal.toLocaleString() + " -";
                 document.getElementById('inv-subtotal').innerText = "¥" + grandTotal.toLocaleString(); 
@@ -546,8 +552,10 @@
             baseWage: document.getElementById('set-base-wage').value,
             tripPay: document.getElementById('set-trip-pay').value,
             cName: document.getElementById('set-c-name').value,
+            cZip: document.getElementById('set-c-zip').value,
             cAddr: document.getElementById('set-c-addr').value,
             mName: document.getElementById('set-m-name').value,
+            mZip: document.getElementById('set-m-zip').value,
             mAddr: document.getElementById('set-m-addr').value,
             mTel: document.getElementById('set-m-tel').value,
             bank: document.getElementById('set-bank').value
@@ -564,8 +572,10 @@
                     document.getElementById('set-trip-pay').value = v.tripPay || 1000;
                     document.getElementById('base-wage').value = v.baseWage || 18000;
                     document.getElementById('set-c-name').value = v.cName || "";
+                    document.getElementById('set-c-zip').value = v.cZip || "";
                     document.getElementById('set-c-addr').value = v.cAddr || "";
                     document.getElementById('set-m-name').value = v.mName || "";
+                    document.getElementById('set-m-zip').value = v.mZip || "";
                     document.getElementById('set-m-addr').value = v.mAddr || "";
                     document.getElementById('set-m-tel').value = v.mTel || "";
                     document.getElementById('set-bank').value = v.bank || "";

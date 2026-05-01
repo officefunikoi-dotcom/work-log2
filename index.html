@@ -25,21 +25,42 @@
             line-height: 1.47;
         }
 
-        /* 印刷設定 */
+        /* 印刷・PDF設定の強化 */
         @media print {
-            @page { margin: 0; }
-            nav, .no-print, .btn, #toast, .card, .accordion-header { display: none !important; }
-            body { background: #fff; padding: 0; }
-            .preview-wrapper { display: block !important; background: none !important; padding: 0 !important; overflow: visible !important; height: auto !important; }
+            @page { 
+                size: A4;
+                margin: 0; 
+            }
+            nav, .no-print, .btn, #toast, .card, .accordion-header, .btn-danger { display: none !important; }
+            body { background: #fff; padding: 0; margin: 0; }
+            .container { max-width: none; width: 100%; padding: 0; margin: 0; }
+            .preview-wrapper { 
+                display: block !important; 
+                background: none !important; 
+                padding: 0 !important; 
+                overflow: visible !important; 
+                height: auto !important; 
+                min-height: auto !important;
+            }
             .a4-page { 
-                width: 100% !important; 
+                width: 210mm !important; 
+                min-height: 297mm !important;
                 transform: none !important; 
                 margin: 0 !important; 
                 box-shadow: none !important; 
-                padding: 10mm !important; 
+                padding: 15mm !important; 
                 border: none !important;
-                position: static !important;
+                position: relative !important;
+                left: 0 !important;
+                top: 0 !important;
+                page-break-after: always;
+                display: block !important;
             }
+            /* 2枚目以降への対応 */
+            table { page-break-inside: auto; }
+            tr { page-break-inside: avoid; page-break-after: auto; }
+            thead { display: table-header-group; }
+            tfoot { display: table-footer-group; }
         }
 
         nav {
@@ -61,7 +82,6 @@
         label { display: block; font-size: 13px; font-weight: 600; color: var(--apple-sub); margin-bottom: 5px; }
         input, select, textarea { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #d2d2d7; font-size: 16px; background: #fff; appearance: none; }
         
-        /* アコーディオン */
         .accordion { border-radius: var(--apple-radius); overflow: hidden; margin-bottom: 12px; border: 1px solid #d2d2d7; }
         .accordion-header { background: #fff; padding: 15px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
         .accordion-content { background: #fff; padding: 15px; display: none; }
@@ -69,7 +89,6 @@
         .accordion-header::after { content: '＋'; font-size: 12px; color: var(--apple-sub); }
         .accordion.open .accordion-header::after { content: '－'; }
 
-        /* チェックボックス表示崩れ修正部分 */
         .checkbox-container { display: flex; align-items: center; gap: 10px; padding: 12px; background: #fff; border: 1px solid #d2d2d7; border-radius: 10px; }
         .checkbox-container input { width: 22px; height: 22px; appearance: checkbox; margin: 0; flex-shrink: 0; }
 
@@ -302,12 +321,20 @@
             if (wrapper.parentElement.classList.contains('hidden')) return;
             const page = wrapper.querySelector('.a4-page');
             if (!page) return;
-            const containerWidth = wrapper.offsetWidth - 20;
-            const a4WidthPx = 210 * 3.7795;
-            const scale = Math.min(containerWidth / a4WidthPx, 1);
-            page.style.transform = `translateX(-50%) scale(${scale})`;
-            const a4HeightPx = 297 * 3.7795;
-            wrapper.style.height = (a4HeightPx * scale + 40) + "px";
+            
+            // 印刷モードでない場合のみスケーリングを適用
+            if (window.matchMedia('screen').matches) {
+                const containerWidth = wrapper.offsetWidth - 20;
+                const a4WidthPx = 210 * 3.7795;
+                const scale = Math.min(containerWidth / a4WidthPx, 1);
+                page.style.transform = `translateX(-50%) scale(${scale})`;
+                
+                // コンテンツ量に合わせてプレビューの枠線を自動で広げる
+                const contentHeight = page.scrollHeight;
+                const a4HeightPx = Math.max(297 * 3.7795, contentHeight);
+                wrapper.style.height = (a4HeightPx * scale + 40) + "px";
+                page.style.minHeight = "297mm";
+            }
         });
     }
 
@@ -442,7 +469,6 @@
                     </tr>`;
                 }).join('');
 
-                // 税込合計額の10%を消費税として計算
                 const tax = Math.floor(grandTotal * 0.1);
 
                 document.getElementById('disp-total').innerText = "¥ " + grandTotal.toLocaleString() + " -";
